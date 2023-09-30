@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--====== MOBILE STATUS BAR COLOR ======-->
+    <meta name="theme-color" content="#fff">
+    <!--====== TITLE ======-->
+    <title>Sudoku Játék</title>
+    <!--====== BOXICONS ======-->
+    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
+    <!--====== CSS ======-->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!--====== TOP NAV ======-->
+        <nav>
+            <div class="nav-container">
+                <a href="#" class="nav-logo">
+                    Sudoku
+                </a>
+                <div class="dark-mode-toggle" id="dark-mode-toggle">
+                    <i class="bx bxs-sun"></i>
+                    <i class="bx bxs-moon"></i>
+                </div>
+            </div>
+        </nav>
+    <!--====== END TOP NAV ======-->
+
+    <!--====== MAIN ======-->
+    <main class="main">
+        <div class="screen">
+            <!--====== START SCREEN ======-->
+            <div class="start-screen active" id="start-screen">
+                <input type="text" placeholder="Játékos név" maxlength="11" class="input-name" id="input-name">
+                <div class="btn" id="btn-level">
+                    Könnyű
+                </div>
+                <div class="btn" id="btn-continue">Folytatás</div>
+                <div class="btn btn-blue" id="btn-play">Új játék</div>
+            </div>
+            <!--====== END SCREEN ======-->
+            <!--====== GAME SCREEN ======-->
+            <div class="main-game" id="game-screen">
+                <div class="main-sudoku-grid">
+                    <!--====== 81 CELLS ======-->
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                    <div class="main-grid-cell"></div>
+                </div>
+
+                <div class="main-game-info">
+                    <div class="main-game-info-box main-game-info-name">
+                        <span id="player-name"></span>
+                    </div>
+                    <div class="main-game-info-box main-game-info-level">
+                        <span id="game-level"></span>
+                    </div>
+                </div>
+
+                <div class="main-game-info-box main-game-info-time">
+                    <span id="game-time">00:00:00</span>
+                    <div class="pause-btn" id="btn-pause">
+                        <i class="bx bx-pause"></i>
+                    </div>
+                </div>
+
+                <div class="numbers">
+                    <div class="number">1</div>
+                    <div class="number">2</div>
+                    <div class="number">3</div>
+                    <div class="number">4</div>
+                    <div class="number">5</div>
+                    <div class="number">6</div>
+                    <div class="number">7</div>
+                    <div class="number">8</div>
+                    <div class="number">9</div>
+                    <div class="delete" id="btn-delete">X</div>
+                </div>
+            </div>
+            <!--====== END GAME SCREEN ======-->
+
+            <!--====== PAUSE SCREEN ======-->
+            <div class="pause-screen" id="pause-screen">
+                <div class="btn btn-blue" id="btn-resume">Folytatás</div>
+                <div class="btn" id="btn-new-game">Új játék</div>
+            </div>
+            <!--====== END PAUSE SCREEN ======-->
+
+            <!--====== RESULT SCREEN ======-->
+            <div class="result-screen" id="result-screen">
+                <div class="congrate">Teljesítve</div>
+                <div class="info">Idő</div>
+                <div id="result-time"></div>
+                <div class="btn" id="btn-new-game-2">Új játék</div>
+            </div>
+            <!--====== END RESULT SCREEN ======-->
+        </div>
+    </main>
+    <!--====== END MAIN ======-->
+    <script src="constant.js"></script>
+    <script src="sudoku.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
