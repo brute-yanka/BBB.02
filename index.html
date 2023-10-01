@@ -23,105 +23,127 @@
         <!--======== PLAYERS ========-->
         <div class="player-container">
             <div class="player-input">
-                <input type="text" maxlength="14" class="player-input-name" required>
+                <input type="text" maxlength="14" class="input" required>
                 <span>Játékos 1</span>
             </div>
             <div class="player-input">
-                <input type="text" maxlength="14" class="player-input-name" required>
+                <input type="text" maxlength="14" class="input" required>
                 <span>Játékos 2</span>
             </div>
-            <div class="button" id="player-continue">Folytatás</div>
+            <div class="player-input" title="1 és 15 között">
+                <input type="number" value="1" class="input" required>
+                <span>Fordulók</span>
+            </div>
             <div class="button" id="player-play">Új játék</div>
         </div>
     </section>
     <!--======== MAIN ========-->
-    <section class="board active">
-        <div class="player-component">
-            <img src="Assets/Avatar/1.png" alt="Kép" class="player-avatar">
-            <div class="player-data">
-                <div class="player-name"></div>
-                <div class="player-captured">
-                    <span data-piece="bp"></span>
-                    <span data-piece="bp"></span>
-                    <span data-piece="bp"></span>
-                    <span data-piece="br"></span>
-                    <span data-piece="bn"></span>
-                    <span data-piece="bn"></span>
-                    <span data-piece="bb"></span>
-                    <span data-piece="bq"></span>
-                    <span data-piece="bk"></span>
-                </div>
-                <div class="player-ability-container">
-                    <div class="player-ability">
-                        <div class="spell">
-                            <div class="spell-image" data-name="freeze" title="Következő körből kizárja az ellenfelet"></div>
+    <section class="game active">
+        <div class="game-container">
+            <div class="data-container">
+                <div class="player-component">
+                    <img src="Assets/Avatar/1.png" alt="Kép" class="player-avatar">
+                    <div class="player-name">Player 1 <span>+13</span></div>
+                    <div class="player-captured">
+                        <span data-piece="bp"></span>
+                        <span data-piece="bp"></span>
+                        <span data-piece="bp"></span>
+                        <span data-piece="bp"></span>
+                        <span data-piece="bp"></span>
+                        <span data-piece="bp"></span>
+                        <span data-piece="bp"></span>
+                        <span data-piece="bp"></span>
+                        <span data-piece="br"></span>
+                        <span data-piece="br"></span>
+                        <span data-piece="bn"></span>
+                        <span data-piece="bn"></span>
+                        <span data-piece="bb"></span>
+                        <span data-piece="bb"></span>
+                        <span data-piece="bq"></span>
+                        <span data-piece="bk"></span>
+                    </div>
+                    <div class="player-ability-container">
+                        <div class="player-ability">
+                            <div class="spell">
+                                <div class="spell-image" data-name="freeze" title="Következő körből kizárja az ellenfelet"></div>
+                            </div>
+                        </div>
+                        <div class="player-ability">
+                            <div class="spell">
+                                <div class="spell-image" data-name="jump" title="A kiválasztott bábunak különleges képességet ad"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="player-ability">
-                        <div class="spell">
-                            <div class="spell-image" data-name="jump" title="A kiválasztott bábunak különleges képességet ad"></div>
+                </div>
+                <div class="round-counter">
+                    <p>Körök száma: <span class="round-number"></span></p>
+                    <p>Jelenlegi kör: <span class="curr-round-number">0</span></p>
+                </div>
+                <div class="player-component">
+                    <img src="Assets/Avatar/2.png" alt="Kép" class="player-avatar">
+                    <div class="player-name">Player 2 <span>+8</span></div>
+                    <div class="player-captured">
+                        <span data-piece="wp"></span>
+                        <span data-piece="wp"></span>
+                        <span data-piece="wp"></span>
+                        <span data-piece="wp"></span>
+                        <span data-piece="wp"></span>
+                        <span data-piece="wp"></span>
+                        <span data-piece="wp"></span>
+                        <span data-piece="wp"></span>
+                        <span data-piece="wr"></span>
+                        <span data-piece="wr"></span>
+                        <span data-piece="wn"></span>
+                        <span data-piece="wn"></span>
+                        <span data-piece="wb"></span>
+                        <span data-piece="wb"></span>
+                        <span data-piece="wq"></span>
+                        <span data-piece="wk"></span>
+                    </div>
+                    <div class="player-ability-container">
+                        <div class="player-ability">
+                            <div class="spell">
+                                <div class="spell-image" data-name="freeze" title="Következő körből kizárja az ellenfelet"></div>
+                            </div>
+                        </div>
+                        <div class="player-ability">
+                            <div class="spell">
+                                <div class="spell-image" data-name="jump" title="A kiválasztott bábunak különleges képességet ad"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="game-board">
-            <svg viewBox="0 0 100 100" class="notation">
-                <text x="2" y="3.5">8</text>
-                <text x="2" y="16">7</text>
-                <text x="2" y="28.5">6</text>
-                <text x="2" y="41">5</text>
-                <text x="2" y="53.5">4</text>
-                <text x="2" y="66">3</text>
-                <text x="2" y="78.5">2</text>
-                <text x="2" y="91">1</text>
-                <text x="10.35" y="99.25">a</text>
-                <text x="22.85" y="99.25">b</text>
-                <text x="35.35" y="99.25">c</text>
-                <text x="47.85" y="99.25">d</text>
-                <text x="60.35" y="99.25">e</text>
-                <text x="72.85" y="99.25">f</text>
-                <text x="85.35" y="99.25">g</text>
-                <text x="97.85" y="99.25">h</text>
-            </svg>
-            <div class="highlight"></div>
-            <div class="hover"></div>
-            <div class="hint" style="transform: translate(300%, 500%);"></div>
-            <div class="hint" style="transform: translate(300%, 400%);"></div>
-        </div>
-        <div class="player-component">
-            <img src="Assets/Avatar/2.png" alt="Kép" class="player-avatar">
-            <div class="player-data">
-                <div class="player-name"></div>
-                <div class="player-captured">
-                    <span data-piece="wp"></span>
-                    <span data-piece="wp"></span>
-                    <span data-piece="wp"></span>
-                    <span data-piece="wr"></span>
-                    <span data-piece="wr"></span>
-                    <span data-piece="wn"></span>
-                    <span data-piece="wb"></span>
-                    <span data-piece="wb"></span>
-                    <span data-piece="wq"></span>
-                    <span data-piece="wk"></span>
-                </div>
-                <div class="player-ability-container">
-                    <div class="player-ability">
-                        <div class="spell">
-                            <div class="spell-image" data-name="freeze" title="Következő körből kizárja az ellenfelet"></div>
-                        </div>
-                    </div>
-                    <div class="player-ability">
-                        <div class="spell">
-                            <div class="spell-image" data-name="jump" title="A kiválasztott bábunak különleges képességet ad"></div>
-                        </div>
-                    </div>
-                </div>
+            <div class="game-board">
+                <svg viewBox="0 0 100 150" class="notation">
+                    <text x="2" y="3.5">12</text>
+                    <text x="2" y="16">11</text>
+                    <text x="2" y="28.5">10</text>
+                    <text x="2" y="41">9</text>
+                    <text x="2" y="53.5">8</text>
+                    <text x="2" y="66">7</text>
+                    <text x="2" y="78.5">6</text>
+                    <text x="2" y="91">5</text>
+                    <text x="2" y="103.5">4</text>
+                    <text x="2" y="116">3</text>
+                    <text x="2" y="128.5">2</text>
+                    <text x="2" y="141">1</text>
+                    <text x="10.35" y="148.875">a</text>
+                    <text x="22.85" y="148.875">b</text>
+                    <text x="35.35" y="148.875">c</text>
+                    <text x="47.85" y="148.875">d</text>
+                    <text x="60.35" y="148.875">e</text>
+                    <text x="72.85" y="148.875">f</text>
+                    <text x="85.35" y="148.875">g</text>
+                    <text x="97.85" y="148.875">h</text>
+                </svg>
+                <div class="highlight"></div>
+                <div class="hover"></div>
             </div>
         </div>
     </section>
     <!--======== OUTCOME ========-->
-    <section>
+    <section class="outcome">
 
     </section>
 </body>

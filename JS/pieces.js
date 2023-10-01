@@ -33,31 +33,31 @@ let pieces = [
     //BLACK
     {
         name: 'bp',
-        position: ['17', '27', '37', '47', '57', '67', '77', '87'],
+        position: ['111', '211', '311', '411', '511', '611', '711', '811'],
         points: 1
     },
     {
         name: 'br',
-        position: ['18', '88'],
+        position: ['112', '812'],
         points: 3
     },
     {
         name: 'bn',
-        position: ['28', '78'],
+        position: ['212', '712'],
         points: 2
     },
     {
         name: 'bb',
-        position: ['38', '68'],
+        position: ['312', '612'],
     },
     {
         name: 'bq',
-        position: ['48'],
+        position: ['412'],
         points: 5
     },
     {
         name: 'bk',
-        position: ['58'],
+        position: ['512'],
         points: 2
     }
 ];

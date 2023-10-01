@@ -50,6 +50,7 @@ main{
 
 .container{
     max-width: 1024px;
+    height: 100%;
     margin-inline: 1.5rem;
 }
 
@@ -145,7 +146,7 @@ section.active{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 2.5rem;
+    gap: 3.5rem;
     margin-top: 2.5rem;
 }
 
@@ -193,6 +194,12 @@ section.active{
     border: 1px solid var(--title-color);
 }
 
+.player-input input::-webkit-outer-spin-button,
+.player-input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 .button{
     display: grid;
     place-items: center;
@@ -233,22 +240,33 @@ section.active{
 }
 
 /* ========== BOARD ========== */
+.game-container{
+    display: flex;
+    gap: 4.5rem;
+}
+
+.data-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    row-gap: 3rem;
+}
+
 .game-board{
     position: relative;
-    width: 720px;
+    width: 480px;
     height: 720px;
     background-image: url(/Assets/Board/board.png);
     background-size: 100%;
     border-radius: 3px;
-    contain: layout;
-    margin: 1rem 0 2.5rem 0;
 }
 
 .notation{
     position: absolute;
     left: 0;
     top: 0;
-    transform: translate(-5%, 4%);
+    transform: translate(-5%, 2.6%);
 }
 
 .notation text{
@@ -261,27 +279,19 @@ section.active{
 .player-component{
     position: relative;
     display: flex;
+    flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    height: 100%;
     max-width: 100%;
+    gap: 1.2rem;
 }
 
 .player-avatar{
     position: relative;
     overflow: hidden;
     border-radius: 0.3rem;
-    margin-right: 1rem;
-    max-width: 50px;
-    max-height: 50px;
-}
-
-.player-data{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    gap: 0.5rem;
+    max-width: 75px;
+    max-height: 75px;
 }
 
 .player-name{
@@ -296,7 +306,10 @@ section.active{
 
 .player-captured{
     display: flex;
+    flex-wrap: wrap;
+    max-width: 240px;
     align-items: center;
+    justify-content: center;
     gap: 0.2rem;
 }
 
@@ -308,6 +321,16 @@ section.active{
     border-radius: 0.5rem;
     height: 1.5rem;
     width: 1.5rem;
+}
+
+.round-counter p{
+    font-size: var(--font-size-3);
+    font-weight: var(--font-weight-500);
+    color: var(--text-color);
+}
+
+.round-counter p span{
+    color: var(--title-color);
 }
 
 .player-ability-container{
@@ -405,7 +428,7 @@ section.active{
     top: 0;
     background-size: 100%;
     cursor: grab;
-    height: 12.5%;
+    height: 8.333333333333%;
     width: 12.5%;
     z-index: 2;
 }
@@ -415,7 +438,7 @@ section.active{
     top: 0;
     left: 0;
     width: 12.5%;
-    height: 12.5%;
+    height: 8.333333333333%;
     background-color: rgba(255, 255, 51);
     opacity: 0;
 }
@@ -425,9 +448,9 @@ section.active{
     top: 0;
     left: 0;
     width: 12.5%;
-    height: 12.5%;
+    height: 8.333333333333%;
     background: none;
-    border: 4px inset var(--text-color);
+    border: 3px inset var(--text-color);
     opacity: 0;
 }
 
@@ -435,8 +458,8 @@ section.active{
     position: absolute;
     top: 0;
     left: 0;
-    height: 12.5%;
     width: 12.5%;
+    height: 8.333333333333%;
     border-radius: 50%;
     background-clip: content-box;
     padding: 4.2%;
