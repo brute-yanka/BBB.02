@@ -8,27 +8,37 @@ let pieces = [
     {
         name: 'wr',
         position: ['11', '81'],
-        points: 3
+        points: 3,
+        moves: [0, 1, 0, -1, 0],
+        steps: 12
     },
     {
         name: 'wn',
         position: ['21', '71'],
-        points: 2
+        points: 2,
+        moves: [2, 1, 2, -1, -2, 1, -2, -1, 2],
+        steps: 1
     },
     {
         name: 'wb',
         position: ['31', '61'],
-        points: 2
+        points: 2,
+        moves: [1, 1, -1, -1, 1],
+        steps: 8
     },
     {
         name: 'wq',
-        position: ['41'],
-        points: 5
+        position: ['51'],
+        points: 5,
+        moves: [1, 1, -1, 0, -1, -1, 1, 0, 1],
+        steps: 12
     },
     {
         name: 'wk',
-        position: ['51'],
-        points: 2
+        position: ['41'],
+        points: 2,
+        moves: [1, 1, -1, 0, -1, -1, 1, 0, 1],
+        steps: 2
     },
     //BLACK
     {
@@ -39,25 +49,35 @@ let pieces = [
     {
         name: 'br',
         position: ['112', '812'],
-        points: 3
+        points: 3,
+        moves: [0, 1, 0, -1, 0],
+        steps: 12
     },
     {
         name: 'bn',
         position: ['212', '712'],
-        points: 2
+        points: 2,
+        moves: [2, 1, 2, -1, -2, 1, -2, -1, 2],
+        steps: 1
     },
     {
         name: 'bb',
         position: ['312', '612'],
+        moves: [1, 1, -1, -1, 1],
+        steps: 8
     },
     {
         name: 'bq',
-        position: ['412'],
-        points: 5
+        position: ['512'],
+        points: 5,
+        moves: [1, 1, -1, 0, -1, -1, 1, 0, 1],
+        steps: 12
     },
     {
         name: 'bk',
-        position: ['512'],
-        points: 2
+        position: ['412'],
+        points: 2,
+        moves: [1, 1, -1, 0, -1, -1, 1, 0, 1],
+        steps: 2
     }
 ];

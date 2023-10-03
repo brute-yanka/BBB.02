@@ -23,13 +23,28 @@ document.getElementById('player-play').addEventListener('click', () => {
     }
 });
 
-// ========== ELEMENT CREATOR FUNCTION ==========
+// ========== ELEMENT CREATOR ==========
 function createElementWithAttributes(tag, attributes, innerHTML) {
     const element = document.createElement(tag);
     for (const attribute in attributes) element.setAttribute(attribute, attributes[attribute]);
     if (innerHTML !== undefined) element.innerHTML = innerHTML;
     return element;
 };
+
+// ========== ATTRIBUTE GETTER ==========
+function getAttributeValue(element, attributeName) {
+    if (element.hasAttribute(attributeName)) return element.getAttribute(attributeName);
+    else return null;
+}
+
+function getAllAttributes(element) {
+    const attributesObject = {};
+    element.getAttributeNames().forEach(attributeName => {
+        const attributeValue = element.getAttribute(attributeName);
+        attributesObject[attributeName] = attributeValue;
+    });
+    return attributesObject;
+}
 
 // ========== INIT ELEMENT POS ==========
 function calcPos(input) {
@@ -50,7 +65,53 @@ function initGame() {
     const containerRect = gameBoard.getBoundingClientRect();
 
     let selectedPiece = null;
+    let selectedPiecePos;
     let playerGo = 'w';
+    const boardWidth = 700;
+    const boardHeight = 1100;
+    
+    function calcValidSteps(event) {
+        const attributes = getAllAttributes(selectedPiece);
+        const pos = getPos(event, containerRect, selectedPiece);
+
+        if(attributes['data-piece'].charAt(1)==='p'){
+            const direction = attributes['data-direction'] === 'up' ? 1 : -1;
+            for (let i = 100; i <= 300; i += 100){
+                const step = document.querySelector(`[style*="transform: translate(${pos.x}%,${pos.y - i * direction}%)"]`);
+                if(step === null && pos.y - direction * i >= 0 && pos.y - direction * i <= boardHeight)
+                    gameBoard.append(createElementWithAttributes('div',{ class: 'hint', style: `transform: translate(${pos.x}%,${pos.y - i * direction}%)` }));
+                else break;
+            }
+
+            const captureLeft = document.querySelector(`[style*="transform: translate(${pos.x - 100}%,${pos.y - direction * 100}%)"]`);
+            if (captureLeft !== null && captureLeft.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
+                gameBoard.append(createElementWithAttributes('div', { class: 'hint', style: `transform: translate(${pos.x - 100}%,${pos.y - direction * 100}%)` }));
+            
+            const captureRight = document.querySelector(`[style*="transform: translate(${pos.x + 100}%,${pos.y - direction * 100}%)"]`);
+            if (captureRight !== null && captureRight.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
+                gameBoard.append(createElementWithAttributes('div',{ class: 'hint', style: `transform: translate(${pos.x + 100}%,${pos.y - direction * 100}%)` }));
+        }
+        else {
+            const pieceInfo = pieces.find(piece => piece.name === attributes['data-piece']);
+            for (let j = 0; j < pieceInfo.moves.length; j++){
+                for (let i = 1; i <= pieceInfo.steps; i++){
+                    const posX = pos.x - pieceInfo.moves[j] * i * 100;
+                    const posY = pos.y - pieceInfo.moves[j + 1] * i * 100;
+                    if (posX >= 0 && posX <= boardWidth && posY >= 0 && posY <= boardHeight) {
+                        const step = document.querySelector(`[style*="transform: translate(${posX}%,${posY}%)"]`);
+                        if (step !== null) {
+                            if (step.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0)) {
+                                gameBoard.append(createElementWithAttributes('div',{ class: 'hint', style: `transform: translate(${posX}%,${posY}%)` }));
+                            }
+                            break;
+                        }
+                        else gameBoard.append(createElementWithAttributes('div',{ class: 'hint', style: `transform: translate(${posX}%,${posY}%)` }));
+                    }
+                    else break;
+                }
+            }
+        }
+    }
 
     gameBoard.addEventListener('mousedown', (event) => {
         event.preventDefault();
@@ -59,14 +120,16 @@ function initGame() {
             selectedPiece = clickedElement;
 
             const pos = getPos(event, containerRect, selectedPiece);
+            
             document.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
             document.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
             
+            selectedPiecePos = pos;
             selectedPiece.style.zIndex = 100;
             selectedPiece.style.cursor = 'grabbing';
 
-            //calculate all valid steps
-            //create hints and set its pos to valid steps pos (<div class="hint" style="transform: translate(300%, 500%);"></div>)
+            gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
+            calcValidSteps(event);
         } else {
             document.querySelector('.highlight').style.cssText = `opacity: 0;`;
             document.querySelector('.hover').style.cssText = `opacity: 0;`;
@@ -85,21 +148,39 @@ function initGame() {
         }
     });
 
-    gameBoard.addEventListener('mouseup', (event) => {
+    document.addEventListener('mouseup', (event) => {
         if (selectedPiece) {
-            //check if curr pos is among valid steps -> capture sound v illegal sound
-            //if valid and capture -> remove enemy's figure + append to captured container + add points querySelector('.player-name span')
-            capture.play();
-
             const pos = getPos(event, containerRect, selectedPiece);
-            selectedPiece.style.transform = `translate(${pos.x}%, ${pos.y}%)`;
-            document.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
-            document.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
-            
-            selectedPiece.style.zIndex = '';
-            selectedPiece.style.cursor = 'grab';
-            selectedPiece = null;
-            playerGo = (playerGo === 'w') ? 'b' : 'w';
+            if (gameBoard.querySelector(`.hint[style*="transform: translate(${pos.x}%,${pos.y}%)"]`)) {
+                capture.play();
+                selectedPiece.style.transform = `translate(${pos.x}%, ${pos.y}%)`;
+                document.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
+                document.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
+                
+                // if capture -> remove enemy's figure + append to captured container + add points querySelector('.player-name span')
+
+                if (selectedPiece.getAttribute('data-piece').charAt(1) === 'p') {
+                    if (selectedPiece.getAttribute('data-direction') === 'up' && pos.y === 0) selectedPiece.setAttribute('data-direction', 'down');
+                    else if (selectedPiece.getAttribute('data-direction') === 'down' && pos.y === boardHeight) selectedPiece.setAttribute('data-direction', 'up');
+                }
+
+                selectedPiece.style.zIndex = '';
+                selectedPiece.style.cursor = 'grab';
+                selectedPiece = null;
+                playerGo = (playerGo === 'w') ? 'b' : 'w';
+
+                gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
+            } else {
+                if(pos.x !== selectedPiecePos.x || pos.y !== selectedPiecePos.y) illegal.play();
+
+                selectedPiece.style.transform = `translate(${selectedPiecePos.x}%, ${selectedPiecePos.y}%)`;
+                document.querySelector('.highlight').style.cssText = `transform: translate(${selectedPiecePos.x}%, ${selectedPiecePos.y}%); opacity: 0.5;`;
+                document.querySelector('.hover').style.cssText = `transform: translate(${selectedPiecePos.x}%, ${selectedPiecePos.y}%); opacity: 0.7;`;
+
+                selectedPiece.style.zIndex = '';
+                selectedPiece.style.cursor = 'grab';
+                selectedPiece = null;
+            }
         }
     });
 
@@ -107,10 +188,18 @@ function initGame() {
     //move history on the right side
     pieces.forEach((piece) => {
         for (let i = 0; i < piece.position.length; i++){
-            const figure = createElementWithAttributes('div', { class: 'piece', 'data-piece': piece.name, style: calcPos(piece.position[i]), draggable: true });
+            const figure = createElementWithAttributes('div', {
+                class: 'piece',
+                'data-piece': piece.name,
+                'data-direction': 1,
+                style: calcPos(piece.position[i]),
+                draggable: true
+            });
+            if (piece.name === 'wp') figure.setAttribute('data-direction', 'up');
+            else if (piece.name === 'bp') figure.setAttribute('data-direction', 'down');
             document.querySelector('.game-board').append(figure);
         }
-    });   
+    });
 }
 
-initGame(); // DELETE IF THE HOME PAGE IS UNDER TEST
+initGame(); // DELETE IF THE HOME PAGE IS ACTIVE
