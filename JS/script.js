@@ -5,11 +5,11 @@ document.getElementById('player-play').addEventListener('click', () => {
     if (input[0].value.trim().length > 0 && input[1].value.trim().length > 0 && input[2].value >= 1 && input[2].value <= 15) {
         document.querySelector('.home').classList.remove('active');
         document.querySelector('.game').classList.add('active');
-        initGame();
         document.querySelectorAll('.player-name').forEach((name, i) => {
-            name.innerHTML = `${input[i].value.trim()} <span>0</span>`;
+            name.innerHTML = `${input[i].value.trim()}<span>0</span>`;
         });
         document.querySelector('.round-number').innerHTML = input[2].value;
+        initGame();
     } else {
         input.forEach((name) => {
             if (name.value.trim().length == 0 || name.value < 1 || name.value > 15) {
