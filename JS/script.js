@@ -108,51 +108,48 @@ function initGame() {
     }
     
     function calcValidSteps(event) {
+        //All the attributes in an object
         const attributes = getAllAttributes(selectedPiece);
+        //Selected element current pos
         const pos = getPos(event, containerRect, selectedPiece);
-
-        if(attributes['data-piece'].charAt(1)==='p'){
-            const direction = attributes['data-direction'] === 'up' ? 1 : -1;
-            for (let i = 100; i <= 300; i += 100){
-                const posY = pos.y - i * direction;
-                if (posY >= 0 && posY <= boardHeight) {
-                    const step = gameBoard.querySelector(`[style*="transform: translate(${pos.x}%, ${posY}%)"]`);
-                    if (step === null) {
-                        gameBoard.append(createElementWithAttributes('div', { class: 'hint', style: `transform: translate(${pos.x}%, ${posY}%)` }));
-                    } else break;
+        //Further information about the selected piece from the pieces array
+        const pieceInfo = pieces.find(piece => piece.name === attributes['data-piece']);
+        //moves array.length - 1 -> for overflow
+        for (let j = 0; j < pieceInfo.moves.length - 1; j++) {
+            //Check direction for pawn (if the element does not have this attr. the direction is default (1))
+            const direction = attributes['data-direction'] === 'down' ? -1 : 1;
+            console.log(direction);
+            for (let i = 1; i <= pieceInfo.steps; i++) {
+                //Calc new pos for x and y
+                const posX = pos.x - pieceInfo.moves[j] * i * 100;
+                const posY = pos.y - pieceInfo.moves[j + 1] * i * 100 * direction;
+                if (posX >= 0 && posX <= boardWidth && posY >= 0 && posY <= boardHeight) {
+                    //Selecting element on given pos
+                    const step = gameBoard.querySelector(`[style*="transform: translate(${posX}%, ${posY}%)"]`);
+                    if (step !== null) {
+                        //Occupied pos -> if not pawn -> check for diff. color
+                        if (step.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0) && attributes['data-piece'].charAt(1) !== 'p')
+                            gameBoard.append(createElementWithAttributes('div', { class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${posX}%, ${posY}%)` }));
+                        //Means that it was pawn or same color
+                        break; 
+                    }
+                    //Means there is no collision
+                    else gameBoard.append(createElementWithAttributes('div', { class: 'hint', style: `transform: translate(${posX}%, ${posY}%)` }));
+                //Out of board
                 } else break;
             }
-
-            const captureLeft = gameBoard.querySelector(`[style*="transform: translate(${pos.x - 100}%, ${pos.y - direction * 100}%)"]`);
-            if (captureLeft !== null && captureLeft.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
-                gameBoard.append(createElementWithAttributes('div', { class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${pos.x - 100}%, ${pos.y - direction * 100}%)` }));
-            
-            const captureRight = gameBoard.querySelector(`[style*="transform: translate(${pos.x + 100}%, ${pos.y - direction * 100}%)"]`);
-            if (captureRight !== null && captureRight.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
-                gameBoard.append(createElementWithAttributes('div',{ class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${pos.x + 100}%, ${pos.y - direction * 100}%)` }));
-        }
-        else {
-            const pieceInfo = pieces.find(piece => piece.name === attributes['data-piece']);
-            for (let j = 0; j < pieceInfo.moves.length; j++){
-                for (let i = 1; i <= pieceInfo.steps; i++){
-                    const posX = pos.x - pieceInfo.moves[j] * i * 100;
-                    const posY = pos.y - pieceInfo.moves[j + 1] * i * 100;
-                    if (posX >= 0 && posX <= boardWidth && posY >= 0 && posY <= boardHeight) {
-                        const step = gameBoard.querySelector(`[style*="transform: translate(${posX}%, ${posY}%)"]`);
-                        if (step !== null) {
-                            if (step.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
-                                gameBoard.append(createElementWithAttributes('div',{ class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${posX}%, ${posY}%)` }));
-                            break;
-                        }
-                        else gameBoard.append(createElementWithAttributes('div',{ class: 'hint', style: `transform: translate(${posX}%, ${posY}%)` }));
-                    }
-                    else break;
-                }
+            //Need to check if piece is pawn -> check attack diagonally
+            if (attributes['data-piece'].charAt(1) === 'p') {
+                const captureLeft = gameBoard.querySelector(`[style*="transform: translate(${pos.x - 100}%, ${pos.y - direction * 100}%)"]`);
+                if (captureLeft !== null && captureLeft.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
+                    gameBoard.append(createElementWithAttributes('div', { class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${pos.x - 100}%, ${pos.y - direction * 100}%)` }));
+                
+                const captureRight = gameBoard.querySelector(`[style*="transform: translate(${pos.x + 100}%, ${pos.y - direction * 100}%)"]`);
+                if (captureRight !== null && captureRight.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
+                    gameBoard.append(createElementWithAttributes('div',{ class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${pos.x + 100}%, ${pos.y - direction * 100}%)` }));
             }
         }
-        gameBoard.querySelectorAll('.hint').forEach((hint)=>{
-            hint.addEventListener('click', movePieceToPos);
-        });
+        gameBoard.querySelectorAll('.hint').forEach((hint)=> hint.addEventListener('click', movePieceToPos));
     }
 
     gameBoard.addEventListener('mousedown', (event) => {
@@ -246,6 +243,7 @@ function initGame() {
     //avatar input
     //move history on the right side
     //round counter -> finish game -> popup dashboard for winner (or draw)
+    //check for further possible steps -> if none -> end game
     pieces.forEach((piece) => {
         for (let i = 0; i < piece.position.length; i++){
             const figure = createElementWithAttributes('div', {
@@ -261,3 +259,5 @@ function initGame() {
         }
     });
 }
+
+initGame(); //Just for testing

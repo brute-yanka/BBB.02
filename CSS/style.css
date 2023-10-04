@@ -314,11 +314,11 @@ section.active{
 .player-captured{
     display: flex;
     flex-wrap: wrap;
-    max-width: 240px;
     align-items: center;
     justify-content: center;
     gap: 0.2rem;
     height: 1.5rem;
+    width: 14rem;
 }
 
 .player-captured > span{

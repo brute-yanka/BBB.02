@@ -3,7 +3,9 @@ let pieces = [
     {
         name: 'wp',
         position: ['12', '22', '32', '42', '52', '62', '72', '82'],
-        points: 1
+        points: 1,
+        moves: [0, 1],
+        steps: 3
     },
     {
         name: 'wr',
@@ -44,7 +46,9 @@ let pieces = [
     {
         name: 'bp',
         position: ['111', '211', '311', '411', '511', '611', '711', '811'],
-        points: 1
+        points: 1,
+        moves: [0, 1],
+        steps: 3
     },
     {
         name: 'br',
@@ -63,6 +67,7 @@ let pieces = [
     {
         name: 'bb',
         position: ['312', '612'],
+        points: 2,
         moves: [1, 1, -1, -1, 1],
         steps: 8
     },
