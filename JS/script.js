@@ -50,7 +50,7 @@ function getAllAttributes(element) {
 function calcPos(input) {
     const translateX = 800 - parseInt(input[0]) * 100;
     const translateY = 1200 - parseInt(input[1] + input[2]) * 100;
-    return `transform: translate(${translateX}%,${translateY}%)`;
+    return `transform: translate(${translateX}%, ${translateY}%)`;
 }
 
 // ========== CALC NEW POS ==========
@@ -62,13 +62,28 @@ function getPos(event, container, piece) {
 
 function initGame() {
     const gameBoard = document.querySelector('.game-board');
-    const containerRect = gameBoard.getBoundingClientRect();
+    const containerRect = gameBoard.getBoundingClientRect(); //if window change -> update
 
     let selectedPiece = null;
+    let hintActive = null;
     let selectedPiecePos;
     let playerGo = 'w';
     const boardWidth = 700;
     const boardHeight = 1100;
+    console.log(boardWidth, boardHeight);
+    const playersPoint = document.querySelectorAll('.player-name span');
+    const playerCaptured = document.querySelectorAll('.player-captured');
+
+    function movePieceToPos(event){
+        const pos = getPos(event, containerRect, event.target);
+        hintActive.style.transform = `translate(${pos.x}%,${pos.y}%)`;
+        gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
+        gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
+        gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
+
+        playerGo = (playerGo === 'w') ? 'b' : 'w';
+        hintActive = null;
+    }
     
     function calcValidSteps(event) {
         const attributes = getAllAttributes(selectedPiece);
@@ -77,19 +92,22 @@ function initGame() {
         if(attributes['data-piece'].charAt(1)==='p'){
             const direction = attributes['data-direction'] === 'up' ? 1 : -1;
             for (let i = 100; i <= 300; i += 100){
-                const step = document.querySelector(`[style*="transform: translate(${pos.x}%,${pos.y - i * direction}%)"]`);
-                if(step === null && pos.y - direction * i >= 0 && pos.y - direction * i <= boardHeight)
-                    gameBoard.append(createElementWithAttributes('div',{ class: 'hint', style: `transform: translate(${pos.x}%,${pos.y - i * direction}%)` }));
-                else break;
+                const posY = pos.y - i * direction;
+                if (posY >= 0 && posY <= boardHeight) {
+                    const step = gameBoard.querySelector(`[style*="transform: translate(${pos.x}%, ${posY}%)"]`);
+                    if (step === null) {
+                        gameBoard.append(createElementWithAttributes('div', { class: 'hint', style: `transform: translate(${pos.x}%, ${posY}%)` }));
+                    } else break;
+                } else break;
             }
 
-            const captureLeft = document.querySelector(`[style*="transform: translate(${pos.x - 100}%,${pos.y - direction * 100}%)"]`);
+            const captureLeft = gameBoard.querySelector(`[style*="transform: translate(${pos.x - 100}%, ${pos.y - direction * 100}%)"]`);
             if (captureLeft !== null && captureLeft.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
-                gameBoard.append(createElementWithAttributes('div', { class: 'hint', style: `transform: translate(${pos.x - 100}%,${pos.y - direction * 100}%)` }));
+                gameBoard.append(createElementWithAttributes('div', { class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${pos.x - 100}%, ${pos.y - direction * 100}%)` }));
             
-            const captureRight = document.querySelector(`[style*="transform: translate(${pos.x + 100}%,${pos.y - direction * 100}%)"]`);
+            const captureRight = gameBoard.querySelector(`[style*="transform: translate(${pos.x + 100}%, ${pos.y - direction * 100}%)"]`);
             if (captureRight !== null && captureRight.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
-                gameBoard.append(createElementWithAttributes('div',{ class: 'hint', style: `transform: translate(${pos.x + 100}%,${pos.y - direction * 100}%)` }));
+                gameBoard.append(createElementWithAttributes('div',{ class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${pos.x + 100}%, ${pos.y - direction * 100}%)` }));
         }
         else {
             const pieceInfo = pieces.find(piece => piece.name === attributes['data-piece']);
@@ -98,19 +116,21 @@ function initGame() {
                     const posX = pos.x - pieceInfo.moves[j] * i * 100;
                     const posY = pos.y - pieceInfo.moves[j + 1] * i * 100;
                     if (posX >= 0 && posX <= boardWidth && posY >= 0 && posY <= boardHeight) {
-                        const step = document.querySelector(`[style*="transform: translate(${posX}%,${posY}%)"]`);
+                        const step = gameBoard.querySelector(`[style*="transform: translate(${posX}%, ${posY}%)"]`);
                         if (step !== null) {
-                            if (step.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0)) {
-                                gameBoard.append(createElementWithAttributes('div',{ class: 'hint', style: `transform: translate(${posX}%,${posY}%)` }));
-                            }
+                            if (step.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
+                                gameBoard.append(createElementWithAttributes('div',{ class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${posX}%, ${posY}%)` }));
                             break;
                         }
-                        else gameBoard.append(createElementWithAttributes('div',{ class: 'hint', style: `transform: translate(${posX}%,${posY}%)` }));
+                        else gameBoard.append(createElementWithAttributes('div',{ class: 'hint', style: `transform: translate(${posX}%, ${posY}%)` }));
                     }
                     else break;
                 }
             }
         }
+        gameBoard.querySelectorAll('.hint').forEach((hint)=>{
+            hint.addEventListener('click', movePieceToPos);
+        });
     }
 
     gameBoard.addEventListener('mousedown', (event) => {
@@ -121,8 +141,8 @@ function initGame() {
 
             const pos = getPos(event, containerRect, selectedPiece);
             
-            document.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
-            document.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
+            gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
+            gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
             
             selectedPiecePos = pos;
             selectedPiece.style.zIndex = 100;
@@ -131,8 +151,8 @@ function initGame() {
             gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
             calcValidSteps(event);
         } else {
-            document.querySelector('.highlight').style.cssText = `opacity: 0;`;
-            document.querySelector('.hover').style.cssText = `opacity: 0;`;
+            gameBoard.querySelector('.highlight').style.cssText = `opacity: 0;`;
+            gameBoard.querySelector('.hover').style.cssText = `opacity: 0;`;
             selectedPiece = null;
         }
     });
@@ -141,23 +161,39 @@ function initGame() {
         if (selectedPiece) {
             const x = Math.min(449, Math.max(-29, event.clientX - containerRect.left - selectedPiece.getBoundingClientRect().width / 2));
             const y = Math.min(689, Math.max(-29, event.clientY - containerRect.top - selectedPiece.getBoundingClientRect().height / 2));
-            selectedPiece.style.transform = `translate(${x}px, ${y}px)`;
+            selectedPiece.style.transform = `translate(${x}px,${y}px)`;
             
             const pos = getPos(event, containerRect, selectedPiece);
-            document.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
+            gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
         }
     });
 
     document.addEventListener('mouseup', (event) => {
         if (selectedPiece) {
             const pos = getPos(event, containerRect, selectedPiece);
-            if (gameBoard.querySelector(`.hint[style*="transform: translate(${pos.x}%,${pos.y}%)"]`)) {
-                capture.play();
-                selectedPiece.style.transform = `translate(${pos.x}%, ${pos.y}%)`;
-                document.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
-                document.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
-                
-                // if capture -> remove enemy's figure + append to captured container + add points querySelector('.player-name span')
+            const valid = gameBoard.querySelector(`.hint[style*="transform: translate(${pos.x}%, ${pos.y}%)"]`);
+            if (valid) {
+                if (valid.getAttribute('data-hint') !== null) {
+                    capture.play();
+
+                    const capturedPiece = gameBoard.querySelector(`.piece[style*="transform: translate(${pos.x}%, ${pos.y}%)"]`);
+                    const foundPiece = pieces.find(piece => piece.name === capturedPiece.getAttribute('data-piece'));
+
+                    if (playerGo === 'w') {
+                        playersPoint[0].textContent = parseInt(playersPoint[0].textContent) + foundPiece.points;
+                        playerCaptured[0].append(createElementWithAttributes('span', { 'data-piece': foundPiece.name }));
+                    } 
+                    else {
+                        playersPoint[1].textContent = parseInt(playersPoint[1].textContent) + foundPiece.points;
+                        playerCaptured[1].append(createElementWithAttributes('span', {'data-piece': foundPiece.name}));
+                    }
+                    
+                    capturedPiece.remove();
+                } else click.play();
+
+                selectedPiece.style.transform = `translate(${pos.x}%,${pos.y}%)`;
+                gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
+                gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
 
                 if (selectedPiece.getAttribute('data-piece').charAt(1) === 'p') {
                     if (selectedPiece.getAttribute('data-direction') === 'up' && pos.y === 0) selectedPiece.setAttribute('data-direction', 'down');
@@ -173,12 +209,13 @@ function initGame() {
             } else {
                 if(pos.x !== selectedPiecePos.x || pos.y !== selectedPiecePos.y) illegal.play();
 
-                selectedPiece.style.transform = `translate(${selectedPiecePos.x}%, ${selectedPiecePos.y}%)`;
-                document.querySelector('.highlight').style.cssText = `transform: translate(${selectedPiecePos.x}%, ${selectedPiecePos.y}%); opacity: 0.5;`;
-                document.querySelector('.hover').style.cssText = `transform: translate(${selectedPiecePos.x}%, ${selectedPiecePos.y}%); opacity: 0.7;`;
-
+                selectedPiece.style.transform = `translate(${selectedPiecePos.x}%,${selectedPiecePos.y}%)`;
+                gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${selectedPiecePos.x}%, ${selectedPiecePos.y}%); opacity: 0.5;`;
+                gameBoard.querySelector('.hover').style.cssText = `transform: translate(${selectedPiecePos.x}%, ${selectedPiecePos.y}%); opacity: 0.7;`;
+                
                 selectedPiece.style.zIndex = '';
                 selectedPiece.style.cursor = 'grab';
+                hintActive = selectedPiece;
                 selectedPiece = null;
             }
         }

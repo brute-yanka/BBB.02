@@ -300,8 +300,15 @@ section.active{
 }
 
 .player-name span{
+    position: relative;
     color: var(--text-color);
     font-size: 1rem;
+    margin-left: 0.5rem;
+}
+
+.player-name span::before{
+    content: '+';
+    margin-right: 0.15rem;
 }
 
 .player-captured{
@@ -311,6 +318,7 @@ section.active{
     align-items: center;
     justify-content: center;
     gap: 0.2rem;
+    height: 1.5rem;
 }
 
 .player-captured > span{
@@ -464,4 +472,15 @@ section.active{
     background-clip: content-box;
     padding: 4.2%;
     background-color: rgba(0,0,0,0.1);
+}
+
+[data-hint="capture-hint"]{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 12.5%;
+    height: 8.333333333333%;
+    border-radius: 50%;
+    background-clip: content-box;
+    border: 5px solid rgba(0, 0, 0, .1);
 }
