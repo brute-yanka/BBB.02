@@ -483,4 +483,5 @@ section.active{
     border-radius: 50%;
     background-clip: content-box;
     border: 5px solid rgba(0, 0, 0, .1);
+    z-index: 100;
 }

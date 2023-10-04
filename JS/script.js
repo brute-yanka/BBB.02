@@ -76,9 +76,30 @@ function initGame() {
 
     function movePieceToPos(event){
         const pos = getPos(event, containerRect, event.target);
+        const valid = gameBoard.querySelector(`.hint[style*="transform: translate(${pos.x}%, ${pos.y}%)"]`);
+        
+        if (valid.getAttribute('data-hint') !== null) {
+            capture.play();
+
+            const capturedPiece = gameBoard.querySelector(`.piece[style*="transform: translate(${pos.x}%, ${pos.y}%)"]`);
+            const foundPiece = pieces.find(piece => piece.name === capturedPiece.getAttribute('data-piece'));
+
+            if (playerGo === 'w') {
+                playersPoint[0].textContent = parseInt(playersPoint[0].textContent) + foundPiece.points;
+                playerCaptured[0].append(createElementWithAttributes('span', { 'data-piece': foundPiece.name }));
+            } 
+            else {
+                playersPoint[1].textContent = parseInt(playersPoint[1].textContent) + foundPiece.points;
+                playerCaptured[1].append(createElementWithAttributes('span', {'data-piece': foundPiece.name}));
+            }
+                    
+            capturedPiece.remove();
+        } else click.play();
+
         hintActive.style.transform = `translate(${pos.x}%,${pos.y}%)`;
         gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
         gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
+
         gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
 
         playerGo = (playerGo === 'w') ? 'b' : 'w';
