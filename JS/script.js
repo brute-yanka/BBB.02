@@ -7,7 +7,7 @@ document.getElementById('player-play').addEventListener('click', () => {
         document.querySelector('.game').classList.add('active');
         initGame();
         document.querySelectorAll('.player-name').forEach((name, i) => {
-            name.innerHTML = `${input[i].value.trim()} <span>+0</span>`;
+            name.innerHTML = `${input[i].value.trim()} <span>0</span>`;
         });
         document.querySelector('.round-number').innerHTML = input[2].value;
     } else {
@@ -62,7 +62,8 @@ function getPos(event, container, piece) {
 
 function initGame() {
     const gameBoard = document.querySelector('.game-board');
-    const containerRect = gameBoard.getBoundingClientRect(); //if window change -> update
+    let containerRect = gameBoard.getBoundingClientRect();
+    window.addEventListener("resize",() => containerRect = gameBoard.getBoundingClientRect());
 
     let selectedPiece = null;
     let hintActive = null;
@@ -70,7 +71,7 @@ function initGame() {
     let playerGo = 'w';
     const boardWidth = 700;
     const boardHeight = 1100;
-    console.log(boardWidth, boardHeight);
+    
     const playersPoint = document.querySelectorAll('.player-name span');
     const playerCaptured = document.querySelectorAll('.player-captured');
 
@@ -244,6 +245,7 @@ function initGame() {
 
     //avatar input
     //move history on the right side
+    //round counter -> finish game -> popup dashboard for winner (or draw)
     pieces.forEach((piece) => {
         for (let i = 0; i < piece.position.length; i++){
             const figure = createElementWithAttributes('div', {
@@ -259,5 +261,3 @@ function initGame() {
         }
     });
 }
-
-initGame(); // DELETE IF THE HOME PAGE IS ACTIVE
