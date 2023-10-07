@@ -17,19 +17,48 @@
     <script defer src="JS/script.js"></script>
 </head>
 <body>
+    <!--======== NOTIFICATIONS ========-->
+    <ul class="notifications"></ul>
     <!--======== PLAYER SELECTOR ========-->
-    <section class="home">
-        <p>Bakonyi Bitfaragó Verseny 2023 - 2. forduló</p>
-        <!--======== PLAYERS ========-->
-        
+    <section class="home active">
+        <div class="home-container">
+            <img src="Assets/Others/home.png" alt="Főoldal képe" class="home-img">
+            <div class="home-data-container">
+                <h1 class="home-title">Játékos adatok</h1>
+                <div class="home-content">
+                    <div class="home-input-container">
+                        <i class="ri-user-line home-input-icon"></i>
+                        <div class="home-input-box">
+                            <input type="text" class="home-input" id="player1" maxlength="15" required>
+                            <label for="player1" class="home-input-label">Játékos neve</label>
+                        </div>
+                    </div>
+                    <div class="home-input-container">
+                        <i class="ri-user-line home-input-icon"></i>
+                        <div class="home-input-box">
+                            <input type="text" class="home-input" id="player2" maxlength="15" required>
+                            <label for="player2" class="home-input-label">Játékos neve</label>
+                        </div>
+                    </div>
+                    <div class="home-input-container">
+                        <i class="ri-numbers-line home-input-icon"></i>
+                        <div class="home-input-box">
+                            <input type="number" class="home-input" id="rounds" required>
+                            <label for="rounds" class="home-input-label">Körök száma</label>
+                        </div>
+                    </div>
+                </div>
+                <button class="home-button" id="start">Játék indítása</button>
+            </div>
+        </div>
     </section>
     <!--======== MAIN ========-->
-    <section class="game active">
+    <section class="game">
         <div class="game-container">
             <div class="data-container">
                 <div class="player-component" data-player="Fekete" data-player-color="b">
                     <img src="Assets/Avatar/1.png" alt="Kép" class="player-avatar">
-                    <div class="player-name"><span>0</span></div>
+                    <div class="player-name"></div>
                     <div class="player-ability-container">
                         <div class="player-ability">
                             <div class="spell">
@@ -94,8 +123,6 @@
                 <div class="hover"></div>
             </div>
         </div>
-        <!--======== NOTIFICATIONS ========-->
-        <ul class="notifications"></ul>
         <!--======== OUTCOME ========-->
         <!-- <div class="outcome">
             <div class="outcome-data">

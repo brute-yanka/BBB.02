@@ -59,12 +59,23 @@ main{
     margin-inline: 1.5rem;
 }
 
+input,
+button{
+    border: none;
+    outline: none;
+}
+
 a{
     text-decoration: none;
 }
 
 li{
     list-style: none;
+}
+
+img{
+    max-width: 100%;
+    height: auto;
 }
 
 .section-title{
@@ -89,10 +100,9 @@ section{
     display: none;
 }
 
-section.active,
-div.active{
+section.active{
     display: block;
-    animation: fade 0.5s ease backwards;
+    animation: fade 0.7s ease backwards;
 }
 
 @keyframes fade{
@@ -121,29 +131,109 @@ div.active{
 }
 
 /* ========== HOME ========== */
-.home > p{
+.home-container{
     position: relative;
-    text-transform: uppercase;
-    text-align: center;
-    font-size: 3rem;
-    letter-spacing: 4px;
-    overflow: hidden;
-    background: linear-gradient(90deg, var(--title-color), var(--text-color), var(--title-color));
-    background-repeat: no-repeat;
-    background-size: 80%;
-    background-clip: initial;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0);
-    animation: animate 3s linear infinite;
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    justify-content: center;
+    align-items: center;
 }
 
-@keyframes animate{
-    0%{
-        background-position: -500%;
-    }
-    100%{
-        background-position: 500%;
-    }
+.home-img{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.home-data-container{
+    position: relative;
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    border: 2px solid var(--white-color);
+    margin-inline: 1.5rem;
+    padding: 2.5rem 1.5rem;
+    border-radius: 1rem;
+    backdrop-filter: blur(1rem);
+}
+
+.home-title{
+    text-align: center;
+    font-size: var(--font-size-1);
+    font-weight: var(--font-weight-500);
+    color: var(--white-color);
+    margin-bottom: 2rem;
+}
+
+.home-content,
+.home-input-container{
+    display: grid;
+}
+
+.home-content{
+    row-gap: 1.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.home-input-container{
+    grid-template-columns: max-content 1fr;
+    align-items: center;
+    column-gap: 0.75rem;
+    border-bottom: 2px solid var(--white-color);
+}
+
+.home-input-icon{
+    font-size: var(--font-size-3);
+    color: var(--white-color);
+}
+
+.home-input-box{
+    position: relative;
+    width: 100%;
+    padding-block: 0.8rem;
+    color: var(--white-color);
+    z-index: 1;
+}
+
+.home-input{
+    position: relative;
+    width: 100%;
+    background: none;
+    color: var(--white-color);
+    font-size: var(--font-size-4);
+}
+
+.home-input::-webkit-outer-spin-button,
+.home-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.home-input-label{
+    position: absolute;
+    left: 0;
+    top: 13px;
+    font-weight: var(--font-weight-400);
+    transition: var(--transition-1);
+}
+
+.home-button{
+    width: 100%;
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: var(--white-color);
+    font-weight: var(--font-weight-500);
+    font-size: var(--font-size-4);
+    cursor: pointer;
+}
+
+.home-input:focus + .home-input-label,
+.home-input:valid + .home-input-label{
+    top: -12px;
+    font-size: 15px;
 }
 
 /* ========== PLAYER SELECTOR ========== */

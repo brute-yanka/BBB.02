@@ -1,5 +1,46 @@
 // ========== INPUT VERIFICATION ==========
+//Main variables
+let playerBlack = null;
+let playerWhite = null;
+let roundsValue = null;
 
+function verifyInput() {
+    //Selectors for further usage
+    playerBlack = document.getElementById('player1').value.trim();
+    playerWhite = document.getElementById('player2').value.trim();
+    roundsValue = parseInt(document.getElementById('rounds').value);
+    //Check if player names are not empty
+    if (playerBlack === '' || playerWhite === '') {
+        createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Hibás játékos név!');
+        return false;
+    }
+    //Check if rounds number is between criteria
+    if (0 >= roundsValue || roundsValue > 15 || isNaN(roundsValue)) {
+        createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Hibás fordulók száma!<br>(Min: 1 - Max: 15)');
+        return false;
+    }
+    //If all checks pass, return true to indicate valid input
+    return true;
+}
+
+document.getElementById('start').addEventListener('click', () => {
+    if (verifyInput()) {
+        //Change active section
+        document.querySelector('section.home').classList.remove('active');
+        document.querySelector('section.game').classList.add('active');
+        //Set game settings
+        const players = document.querySelectorAll('.player-name');
+        const avatars = document.querySelectorAll('.player-avatar');
+        players[0].innerHTML = `${playerBlack} <span>0</span>`;
+        avatars[0].src = `Assets/Avatar/${Math.floor(Math.random() * 5) + 1}.png`;
+        document.querySelector('.round-number').textContent = roundsValue;
+        players[1].innerHTML = `${playerWhite} <span>0</span>`;
+        avatars[1].src = `Assets/Avatar/${Math.floor(Math.random() * 5) + 1}.png`;
+        //Initialize game
+        initGame();
+        createToast('info', '<i class="ri-information-line"></i>', 'A játékot a Fehér játékos tudja kezdeni!');
+    }
+});
 
 document.querySelector('.reset-game').addEventListener('click', () => {
     // fully reset the game
@@ -43,7 +84,26 @@ function getPos(event, container, piece) {
     const y = Math.round(Math.min(689, Math.max(-29, event.clientY - container.top - piece.getBoundingClientRect().height / 2)) / 60) * 100;
     return { x, y };
 }
-// =====================================
+
+// ========== NOTIFICATIONS ==========
+function createToast(type, icon, text) {
+    const container = document.querySelector('.notifications'); //Container to append toast
+    //Create toast with custom parameters
+    const toast = createElementWithAttributes('li',
+        { class: `toast ${type}` },
+        `<div class="column">
+            ${icon}
+            <span>${text}</span>
+        </div>
+        <i class="ri-close-line"></i>`
+    );
+    //Append the toast to the container
+    container.append(toast);
+    //Remove manually on click
+    toast.querySelector('.ri-close-line').addEventListener('click', () => toast.remove());
+    //Remove automatically after 4s
+    setTimeout(() => toast.remove(), 4000);
+}
 
 // ========== INITIALIZE ==========
 function initGame() {
@@ -66,25 +126,6 @@ function initGame() {
     const playerCaptured = document.querySelectorAll('.player-captured');
     const playerAbility = document.querySelectorAll('.player-ability');
 
-    // ========== NOTIFICATIONS ==========
-    function createToast(type, icon, text) {
-        const container = document.querySelector('.notifications'); //Container to append toast
-        //Create toast with custom parameters
-        const toast = createElementWithAttributes('li',
-            { class: `toast ${type}` },
-            `<div class="column">
-                ${icon}
-                <span>${text}</span>
-            </div>
-            <i class="ri-close-line"></i>`
-        );
-        //Append the toast to the container
-        container.append(toast);
-        //Remove manually on click
-        toast.querySelector('.ri-close-line').addEventListener('click', () => toast.remove());
-        //Remove automatically after 4s
-        setTimeout(() => toast.remove(), 4000);
-    }
     // ========== ABILITY HANDLER ==========
     function abilityHandler() {
         //Selectors for further usage
@@ -131,19 +172,19 @@ function initGame() {
             const foundPiece = pieces.find(piece => piece.name === capturedPiece.getAttribute('data-piece'));
             //The player on turn gets the points and the captured piece
             if (playerGo === 'w') {
-                playersPoint[0].textContent = parseInt(playersPoint[0].textContent) + foundPiece.points;
-                playerCaptured[0].append(createElementWithAttributes('span', { 'data-piece': foundPiece.name }));
+                playersPoint[1].textContent = parseInt(playersPoint[1].textContent) + foundPiece.points;
+                playerCaptured[1].append(createElementWithAttributes('span', { 'data-piece': foundPiece.name }));
             }
             else {
-                playersPoint[1].textContent = parseInt(playersPoint[1].textContent) + foundPiece.points;
-                playerCaptured[1].append(createElementWithAttributes('span', {'data-piece': foundPiece.name}));
+                playersPoint[0].textContent = parseInt(playersPoint[0].textContent) + foundPiece.points;
+                playerCaptured[0].append(createElementWithAttributes('span', {'data-piece': foundPiece.name}));
             }
             //Removing the element
             capturedPiece.remove();
         } else click.play(); //Basic move -> click sound
 
         //Moves the selected element / highlight / hover to the clicked position
-        hintActive.style.transform = `translate(${pos.x}%,${pos.y}%)`;
+        hintActive.style.transform = `translate(${pos.x}%, ${pos.y}%)`;
         // Check if the element has the data-original attribute
         if (hintActive.hasAttribute('data-original')) {
             //If so there was a valid step with it so change it back to its original attribute
@@ -361,10 +402,7 @@ function initGame() {
             document.querySelector('.game-board').append(figure);
         }
     });
-    createToast('info', '<i class="ri-information-line"></i>', 'A játékot a Fehér játékos tudja kezdeni!');
 }
-
-initGame(); //Just for testing
 
 
 //mouseup & click movement -> if valid -> avoid using same lines twice
@@ -372,3 +410,5 @@ initGame(); //Just for testing
 //check for further possible steps -> if none -> end game
 // iv)Az a játékos nyer, aki először szedi le az ellenfele minden bábuját.
 // Ha ennyi kör alatt senki sem nyer, a játszma akkor is érjen véget, és az oldal hirdessen győztest a leütött figurák pontjai alapján
+
+//ha paraszt lepest rak ra masik elemre akkor vinni kell annak az iranyat is (plusz visszarakni)
