@@ -8,6 +8,11 @@
     --title-color: #F1F0EA;
     --white-color: #fff;
 
+    --success: #0ABF30;
+    --error: #E24D4C;
+    --warning: #E9BD0C;
+    --info: #3498DB;
+
     --font-family: 'Poppins', sans-serif;
 
     --font-size-1: 38px;
@@ -84,7 +89,8 @@ section{
     display: none;
 }
 
-section.active{
+section.active,
+div.active{
     display: block;
     animation: fade 0.5s ease backwards;
 }
@@ -99,18 +105,18 @@ section.active{
 }
 
 /* ========== SCROLLBAR ========== */
-::-webkit-scrollbar {
+::-webkit-scrollbar{
     width: 0.6rem;
     border-radius: 0.5rem;
     background-color: var(--primary-color);
 }
 
-::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb{
     border-radius: 0.5rem;
     background-color: var(--secondary-color);
 }
 
-::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover{
     background-color: var(--text-color);
 }
 
@@ -195,7 +201,7 @@ section.active{
 }
 
 .player-input input::-webkit-outer-spin-button,
-.player-input input::-webkit-inner-spin-button {
+.player-input input::-webkit-inner-spin-button{
     -webkit-appearance: none;
     margin: 0;
 }
@@ -240,6 +246,16 @@ section.active{
 }
 
 /* ========== BOARD ========== */
+.reset-game{
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    font-size: var(--font-size-4);
+    font-weight: var(--font-weight-400);
+    color: var(--title-color);
+    cursor: pointer;
+}
+
 .game-container{
     display: flex;
     gap: 4.5rem;
@@ -362,6 +378,11 @@ section.active{
     overflow: hidden;
 }
 
+.player-ability .spell.inactive{
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
 .player-ability .spell-image{
     width: 100%;
     height: 100%;
@@ -370,15 +391,16 @@ section.active{
     background-size: contain;
 }
 
-[data-name="freeze"]{
-    background-image: url(/Assets/Ability/freeze.png);
+[data-name="Fagyasztás"]{
+    background-image: url(/Assets/Ability/freeze.png); /*Forrás: https: //thenounproject.com/browse/icons/term/freeze/ */
 }
 
-[data-name="jump"] {
-    background-image: url(/Assets/Ability/jump.png);
+[data-name="Joker"]{
+    background-image: url(/Assets/Ability/joker.png); /* Forrás: https: //thenounproject.com/icon/joker-3370729/ */
 }
 
 /* ========== WHITE CAPTURED FIGURES ========== */
+/* Az összes felhasznált bábu és a játéktábla a chess.com hivatalos oldaláról származik */
 [data-piece="wp"]{
     background-image: url(/Assets/Figures/wp.png);
 }
@@ -441,7 +463,7 @@ section.active{
     z-index: 2;
 }
 
-.highlight {
+.highlight{
     position: absolute;
     top: 0;
     left: 0;
@@ -484,4 +506,130 @@ section.active{
     background-clip: content-box;
     border: 5px solid rgba(0, 0, 0, .1);
     z-index: 100;
+}
+
+/* ========== NOTIFICATIONS ========== */
+.notifications{
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 100;
+}
+
+.notifications :where(.toast, .column){
+    display: flex;
+    align-items: center;
+}
+
+.notifications .toast{
+    position: relative;
+    width: 400px;
+    list-style: none;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--secondary-color);
+    border-left: 0.25rem solid var(--title-color);
+    color: var(--title-color);
+    justify-content: space-between;
+    overflow: hidden;
+    transition: var(--transition-2);
+}
+
+.notifications .toast::before{
+    position: absolute;
+    content: '';
+    height: 3px;
+    width: 100%;
+    bottom: 0;
+    right: 0;
+    animation: fade 4s linear forwards;
+}
+
+@keyframes fade{
+    100%{
+        right: 100%;
+    }
+}
+
+.toast.success::before{
+    background: var(--success);
+}
+
+.toast.success .column i{
+    color: var(--success);
+}
+
+.toast.error::before{
+    background: var(--error);
+}
+
+.toast.error .column i{
+    color: var(--error);
+}
+
+.toast.warning::before{
+    background: var(--warning);
+}
+
+.toast.warning .column i{
+    color: var(--warning);
+}
+
+.toast.info::before{
+    background: var(--info);
+}
+
+.toast.info .column i{
+    color: var(--info);
+}
+
+.toast .column i{
+    font-size: var(--font-size-3);
+}
+
+.toast .column span{
+    font-size: 1rem;
+    margin-left: 1rem;
+}
+
+.toast i:last-child{
+    cursor: pointer;
+}
+
+/* ========== OUTCOME ========== */
+.outcome{
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+}
+
+.outcome-data{
+    height: 650px;
+    width: 650px;
+    background: var(--primary-color);
+    border-radius: 1rem;
+}
+
+/* ========== MEDIA QUERY ========== */
+@media screen and (max-width: 800px){
+    section{
+        display: none !important;
+    }
+    body::before {
+        content: "Ez a felbontás nem támogatott! :(";
+        font-size: var(--font-size-1);
+        font-weight: var(--font-weight-600);
+        color: var(--title-color);
+        text-align: center;
+        display: block;
+        padding: 20px;
+    }
 }

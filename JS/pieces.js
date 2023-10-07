@@ -1,5 +1,6 @@
 let pieces = [
-    //WHITE
+    // ========== WHITE PIECES ==========
+    //Pawn
     {
         name: 'wp',
         position: ['12', '22', '32', '42', '52', '62', '72', '82'],
@@ -7,6 +8,7 @@ let pieces = [
         moves: [0, 1],
         steps: 3
     },
+    //Rook
     {
         name: 'wr',
         position: ['11', '81'],
@@ -14,6 +16,7 @@ let pieces = [
         moves: [0, 1, 0, -1, 0],
         steps: 12
     },
+    //Knight
     {
         name: 'wn',
         position: ['21', '71'],
@@ -21,6 +24,7 @@ let pieces = [
         moves: [2, 1, 2, -1, -2, 1, -2, -1, 2],
         steps: 1
     },
+    //Bishop
     {
         name: 'wb',
         position: ['31', '61'],
@@ -28,6 +32,7 @@ let pieces = [
         moves: [1, 1, -1, -1, 1],
         steps: 8
     },
+    //Queen
     {
         name: 'wq',
         position: ['51'],
@@ -35,6 +40,7 @@ let pieces = [
         moves: [1, 1, -1, 0, -1, -1, 1, 0, 1],
         steps: 12
     },
+    //King
     {
         name: 'wk',
         position: ['41'],
@@ -42,7 +48,8 @@ let pieces = [
         moves: [1, 1, -1, 0, -1, -1, 1, 0, 1],
         steps: 2
     },
-    //BLACK
+    // ========== BLACK PIECES ==========
+    //Pawn
     {
         name: 'bp',
         position: ['111', '211', '311', '411', '511', '611', '711', '811'],
@@ -50,6 +57,7 @@ let pieces = [
         moves: [0, 1],
         steps: 3
     },
+    //Knight
     {
         name: 'br',
         position: ['112', '812'],
@@ -64,6 +72,7 @@ let pieces = [
         moves: [2, 1, 2, -1, -2, 1, -2, -1, 2],
         steps: 1
     },
+    //Bishop
     {
         name: 'bb',
         position: ['312', '612'],
@@ -71,6 +80,7 @@ let pieces = [
         moves: [1, 1, -1, -1, 1],
         steps: 8
     },
+    //Queen
     {
         name: 'bq',
         position: ['512'],
@@ -78,6 +88,7 @@ let pieces = [
         moves: [1, 1, -1, 0, -1, -1, 1, 0, 1],
         steps: 12
     },
+    //King
     {
         name: 'bk',
         position: ['412'],
