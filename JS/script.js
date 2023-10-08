@@ -1,5 +1,9 @@
 // ========== INPUT VERIFICATION ==========
 //Main variables
+const players = document.querySelectorAll('.player-name');
+const avatars = document.querySelectorAll('.player-avatar');
+const playerCaptured = document.querySelectorAll('.player-captured');
+const playerAbility = document.querySelectorAll('.player-ability');
 let playerBlack = null;
 let playerWhite = null;
 let roundsValue = null;
@@ -29,8 +33,6 @@ document.getElementById('start').addEventListener('click', () => {
         document.querySelector('section.home').classList.remove('active');
         document.querySelector('section.game').classList.add('active');
         //Set game settings
-        const players = document.querySelectorAll('.player-name');
-        const avatars = document.querySelectorAll('.player-avatar');
         players[0].innerHTML = `${playerBlack} <span>0</span>`;
         avatars[0].src = `Assets/Avatar/${Math.floor(Math.random() * 5) + 1}.png`;
         document.querySelector('.round-number').textContent = roundsValue;
@@ -42,10 +44,6 @@ document.getElementById('start').addEventListener('click', () => {
     }
 });
 
-document.querySelector('.reset-game').addEventListener('click', () => {
-    // fully reset the game
-});
-
 // ========== BASIC FUNCTIONS ==========
 //Helper for element creation
 function createElementWithAttributes(tag, attributes, innerHTML) {
@@ -54,12 +52,6 @@ function createElementWithAttributes(tag, attributes, innerHTML) {
     if (innerHTML !== undefined) element.innerHTML = innerHTML;
     return element;
 };
-
-//Specific attribute getter
-function getAttributeValue(element, attributeName) {
-    if (element.hasAttribute(attributeName)) return element.getAttribute(attributeName);
-    else return null;
-}
 
 //All attributes getter
 function getAllAttributes(element) {
@@ -123,8 +115,6 @@ function initGame() {
     const boardHeight = 1100;
     //For displaying points and captured pieces
     const playersPoint = document.querySelectorAll('.player-name span');
-    const playerCaptured = document.querySelectorAll('.player-captured');
-    const playerAbility = document.querySelectorAll('.player-ability');
 
     // ========== ABILITY HANDLER ==========
     function abilityHandler() {
@@ -157,7 +147,7 @@ function initGame() {
         }
     }
     //Iterate through all the ability elements and add listener
-    playerAbility.forEach((element) => element.addEventListener('click', abilityHandler)); // !!!! KORONKET RESET !!!!
+    playerAbility.forEach((element) => element.addEventListener('click', abilityHandler));
 
     // ========== CALCULATE ALL THE VALID STEPS ==========
     function calcValidSteps(event) {
@@ -205,7 +195,7 @@ function initGame() {
         gameBoard.querySelectorAll('.hint').forEach((hint) => hint.addEventListener('click', movePieceClick));
     }
 
-    // ========== MOVING PIECES WITH DRAG&DROP ==========
+    // ========== MOVING PIECES WITH DRAG & DROP ==========
     gameBoard.addEventListener('mousedown', (event) => {
         event.preventDefault();
         const clickedElement = event.target;
@@ -416,8 +406,25 @@ function initGame() {
     });
 }
 
+// ========== RESET GAME ==========
+document.querySelector('.reset-game').addEventListener('click', () => {
+    //Restore event listeners ???
 
-//mouseup & click movement -> if valid -> avoid using same lines twice
+    //Removing all the remaining pieces
+    document.querySelectorAll('.piece').forEach((piece) => piece.remove());
+    //Reset points
+    players[0].innerHTML = `${playerBlack} <span>0</span>`;
+    players[1].innerHTML = `${playerWhite} <span>0</span>`;
+    //Reset captured pieces
+    playerCaptured[0].innerHTML = '';
+    playerCaptured[1].innerHTML = '';
+    //Reset current round
+    document.querySelector('.curr-round-number').textContent = 10;
+    //Initialize game
+    initGame();
+}, { once: true });
+
+
 //round counter -> finish game -> popup dashboard for winner (or draw)
 //check for further possible steps -> if none -> end game
 // iv)Az a játékos nyer, aki először szedi le az ellenfele minden bábuját.
