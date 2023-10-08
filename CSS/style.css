@@ -207,7 +207,7 @@ section.active{
 }
 
 .home-input::-webkit-outer-spin-button,
-.home-input::-webkit-inner-spin-button {
+.home-input::-webkit-inner-spin-button{
     -webkit-appearance: none;
     margin: 0;
 }
@@ -337,7 +337,7 @@ section.active{
 }
 
 /* ========== BOARD ========== */
-.reset-game{
+.reset-game-button{
     position: fixed;
     bottom: 1rem;
     left: 1rem;
@@ -554,6 +554,26 @@ section.active{
     z-index: 2;
 }
 
+.piece[data-direction="up"]::before,
+.piece[data-direction="down"]::before{
+    position: absolute;
+    font-size: var(--font-size-4);
+    font-weight: var(--font-weight-600);
+    color: var(--primary-color);
+    left: 0.25rem;
+    z-index: 3;
+}
+
+.piece[data-direction="up"]::before{
+    content: '\2191';
+    top: 0.15rem;
+}
+
+.piece[data-direction="down"]::before{
+    content: '\2193';
+    bottom: 0.15rem;
+}
+
 .highlight{
     position: absolute;
     top: 0;
@@ -634,7 +654,7 @@ section.active{
     width: 100%;
     bottom: 0;
     right: 0;
-    animation: fade 4s linear forwards;
+    animation: fade 5s linear forwards;
 }
 
 @keyframes fade{
@@ -691,22 +711,120 @@ section.active{
 /* ========== OUTCOME ========== */
 .outcome{
     position: fixed;
-    display: flex;
     justify-content: center;
     align-items: center;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.8);
-    z-index: 1000;
+    display: none;
+    pointer-events: none;
+    transition: var(--transition-2);
+    z-index: 100;
 }
 
-.outcome-data{
-    height: 650px;
-    width: 650px;
-    background: var(--primary-color);
+.outcome.active{
+    display: flex;
+    pointer-events: auto;
+}
+
+.outcome .layer{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-box{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 380px;
+    width: 100%;
     border-radius: 1rem;
+    background-color: var(--title-color);
+    padding: 1.5rem 1rem;
+    z-index: 110;
+}
+
+.modal-box i{
+    font-size: var(--font-size-1);
+    font-weight: var(--font-weight-400);
+    color: var(--primary-color);
+}
+
+.modal-box h2,
+.modal-box h3{
+    color: var(--primary-color);
+    font-weight: var(--font-weight-600);
+}
+
+.modal-box h3 span{
+    color: var(--success);
+}
+
+.modal-box .modal-box-players{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1.5rem;
+}
+
+.modal-box .modal-box-players img{
+    border: 4px solid var(--primary-color);
+    max-width: 70px;
+    height: auto;
+}
+
+.modal-box .modal-box-players img[data-winner]{
+    border: 4px solid var(--success);
+}
+
+.modal-box .modal-box-players > p{
+    font-size: var(--font-size-3);
+    font-weight: var(--font-weight-500);
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.modal-box-points{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    width: 100%;
+    padding: 0 6rem;
+}
+
+.modal-buttons{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.modal-button{
+    font-size: var(--font-size-4);
+    font-weight: var(--font-weight-400);
+    color: var(--white-color);
+    padding: 0.5rem 1rem;
+    border: none;
+    background: var(--primary-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: var(--transition-1);
+}
+
+.modal-button:hover{
+    background: var(--white-color);
+    color: var(--primary-color);
+    box-shadow: inset 0 0 5px var(--primary-color);
 }
 
 /* ========== MEDIA QUERY ========== */
@@ -714,7 +832,7 @@ section.active{
     section{
         display: none !important;
     }
-    body::before {
+    body::before{
         content: "Ez a felbontás nem támogatott! :(";
         font-size: var(--font-size-1);
         font-weight: var(--font-weight-600);

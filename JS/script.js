@@ -14,13 +14,13 @@ function verifyInput() {
     playerWhite = document.getElementById('player2').value.trim();
     roundsValue = parseInt(document.getElementById('rounds').value);
     //Check if player names are not empty
-    if (playerBlack === '' || playerWhite === '') {
-        createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Hibás játékos név!');
+    if (playerBlack === '' || playerWhite === '' || playerWhite === playerBlack) {
+        createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Hiba!<br>(Játékosnév mező nem lehet üres!)<br>(Játékosnév hossza max. 15 karakter!)<br>(A játékosnév nem egyezhet meg!)');
         return false;
     }
     //Check if rounds number is between criteria
-    if (0 >= roundsValue || roundsValue > 15 || isNaN(roundsValue)) {
-        createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Hibás fordulók száma!<br>(Min: 1 - Max: 15)');
+    if (0 >= roundsValue || isNaN(roundsValue)) {
+        createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Hibás fordulók száma!<br>(Min: 1)');
         return false;
     }
     //If all checks pass, return true to indicate valid input
@@ -40,7 +40,6 @@ document.getElementById('start').addEventListener('click', () => {
         avatars[1].src = `Assets/Avatar/${Math.floor(Math.random() * 5) + 1}.png`;
         //Initialize game
         initGame();
-        createToast('info', '<i class="ri-information-line"></i>', 'A játékot a Fehér játékos tudja kezdeni!');
     }
 });
 
@@ -93,16 +92,16 @@ function createToast(type, icon, text) {
     container.append(toast);
     //Remove manually on click
     toast.querySelector('.ri-close-line').addEventListener('click', () => toast.remove());
-    //Remove automatically after 4s
-    setTimeout(() => toast.remove(), 4000);
+    //Remove automatically after 5s
+    setTimeout(() => toast.remove(), 5000);
 }
 
 // ========== INITIALIZE ==========
 function initGame() {
+    createToast('info', '<i class="ri-information-line"></i>', 'A játékot a Fehér játékos tudja kezdeni!');
     const gameBoard = document.querySelector('.game-board');
     let containerRect = gameBoard.getBoundingClientRect();
-    //Need to update the gameBoard bounding rect on resize to avoid incorrect calculations
-    window.addEventListener("resize",() => containerRect = gameBoard.getBoundingClientRect());
+    function updateClientRect() { containerRect = gameBoard.getBoundingClientRect(); }
 
     let selectedPiece = null; //Currently selected element (for drag&drop)
     let preSelectedPiece = null; //This is for the joker spell
@@ -146,8 +145,6 @@ function initGame() {
             this.removeEventListener('click', abilityHandler);
         }
     }
-    //Iterate through all the ability elements and add listener
-    playerAbility.forEach((element) => element.addEventListener('click', abilityHandler));
 
     // ========== CALCULATE ALL THE VALID STEPS ==========
     function calcValidSteps(event) {
@@ -196,7 +193,7 @@ function initGame() {
     }
 
     // ========== MOVING PIECES WITH DRAG & DROP ==========
-    gameBoard.addEventListener('mousedown', (event) => {
+    function onMouseDown(event) {
         event.preventDefault();
         const clickedElement = event.target;
         //Check if clicked element is a piece and its color equals to player on go
@@ -241,9 +238,9 @@ function initGame() {
             //Reset current selected element
             selectedPiece = null;
         }
-    });
+    };
 
-    document.addEventListener('mousemove', (event) => {
+    function onMouseMove(event) {
         //Only do calculation if there is a selected element
         if (selectedPiece) {
             //min & max is to keep the transformed element within border
@@ -258,9 +255,9 @@ function initGame() {
             //Update hover position according to cursor position
             gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
         }
-    });
+    };
 
-    document.addEventListener('mouseup', (event) => {
+    function onMouseUp(event) {
         //Only do calculation if there is a selected element
         if (!selectedPiece) return;
         //Dragged element position
@@ -332,7 +329,7 @@ function initGame() {
             //Reset the selected element
             selectedPiece = null;
         }
-    });
+    };
 
     // ========== MOVING PIECES WITH CLICK ==========
     function movePieceClick(event) {
@@ -347,14 +344,9 @@ function initGame() {
             const capturedPiece = gameBoard.querySelector(`.piece[style*="transform: translate(${pos.x}%, ${pos.y}%)"]`);
             const foundPiece = pieces.find(piece => piece.name === capturedPiece.getAttribute('data-piece'));
             //The player on turn gets the points and the captured piece
-            if (playerGo === 'w') {
-                playersPoint[1].textContent = parseInt(playersPoint[1].textContent) + foundPiece.points;
-                playerCaptured[1].append(createElementWithAttributes('span', { 'data-piece': foundPiece.name }));
-            }
-            else {
-                playersPoint[0].textContent = parseInt(playersPoint[0].textContent) + foundPiece.points;
-                playerCaptured[0].append(createElementWithAttributes('span', {'data-piece': foundPiece.name}));
-            }
+            const currentPlayerIndex = (playerGo === 'w') ? 1 : 0;
+            playersPoint[currentPlayerIndex].textContent = parseInt(playersPoint[currentPlayerIndex].textContent) + foundPiece.points;
+            playerCaptured[currentPlayerIndex].append(createElementWithAttributes('span', { 'data-piece': foundPiece.name }));
             //Removing the element
             capturedPiece.remove();
         } else click.play(); //Basic move -> click sound
@@ -390,6 +382,15 @@ function initGame() {
         hintActive = null;
     }
 
+    // ========== INITIALIZE EVENT LISTENERS ==========
+    function setupEventListeners() {
+        gameBoard.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        playerAbility.forEach((element) => element.addEventListener('click', abilityHandler));
+        window.addEventListener("resize", updateClientRect); //Need to update the gameBoard bounding rect on resize to avoid incorrect calculations
+    }
+
     // ========== CREATE BOARD PIECES ==========
     pieces.forEach((piece) => {
         //Position arrays length means the number of elements
@@ -404,26 +405,76 @@ function initGame() {
             document.querySelector('.game-board').append(figure);
         }
     });
+    setupEventListeners();
+
+    // ========== OUTCOME ==========
+    function outCome() {
+        //Selectors for further usage
+        const container = document.querySelector('.outcome');
+        const homeButton = document.getElementById('home');
+        const player1Points = parseInt(playersPoint[0].textContent);
+        const player2Points = parseInt(playersPoint[1].textContent);
+        const images = document.querySelectorAll('.modal-box-player img');
+        //Display outcome panel
+        container.classList.add('active');
+        //Check if user want to go to home page
+        homeButton.addEventListener('click', () => {
+            //Reset inputs
+            document.querySelectorAll('.home-input').forEach((input) => input.value = '');
+            //Change active section
+            document.querySelector('section.home').classList.add('active');
+            document.querySelector('section.game').classList.remove('active');
+        });
+        //Set winner
+        if (player1Points > player2Points) {
+            document.querySelector('.modal-box > h3').innerHTML = `<span>${playerWhite}</span> a győztes!`;
+            images[0].setAttribute('data-winner');
+        } else if (player1Points < player2Points) {
+            document.querySelector('.modal-box > h3').innerHTML = `<span>${playerBlack}</span> a győztes!`;
+            images[1].setAttribute('data-winner');
+
+        } else {
+            document.querySelector('.modal-box > h3').innerHTML = `Döntetlen!`;
+        }
+        //Change values
+        images.forEach((image, index) => image.src = avatars[index].src);
+        document.querySelectorAll('.modal-box-player p span').forEach((points, index) => points.textContent = players[index].querySelector('span').textContent);
+    }
+
+    // ========== RESET GAME ==========
+    document.querySelectorAll('.reset-game').forEach((button) => {
+        button.addEventListener('click', () => {
+            //Remove outcome panel display
+            document.querySelector('.outcome').classList.remove('active');
+            //Restore event listeners (to avoid duplicates)
+            gameBoard.removeEventListener('mousedown', onMouseDown);
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            playerAbility.forEach((element) => element.removeEventListener('click', abilityHandler));
+            window.removeEventListener("resize", updateClientRect);
+            //Removing all the remaining pieces
+            document.querySelectorAll('.piece').forEach((piece) => piece.remove());
+            document.querySelectorAll('.hint').forEach((hint) => hint.remove());
+            //Reset spells
+            document.querySelectorAll('.spell').forEach((spell) => spell.classList.remove('inactive'));
+            //Reset points
+            players[0].innerHTML = `${playerBlack} <span>0</span>`;
+            players[1].innerHTML = `${playerWhite} <span>0</span>`;
+            //Reset captured pieces
+            playerCaptured[0].innerHTML = '';
+            playerCaptured[1].innerHTML = '';
+            //Reset current round
+            document.querySelector('.curr-round-number').textContent = 0;
+            //Initialize game
+            initGame();
+        });
+    });
 }
 
-// ========== RESET GAME ==========
-document.querySelector('.reset-game').addEventListener('click', () => {
-    //Restore event listeners ???
 
-    //Removing all the remaining pieces
-    document.querySelectorAll('.piece').forEach((piece) => piece.remove());
-    //Reset points
-    players[0].innerHTML = `${playerBlack} <span>0</span>`;
-    players[1].innerHTML = `${playerWhite} <span>0</span>`;
-    //Reset captured pieces
-    playerCaptured[0].innerHTML = '';
-    playerCaptured[1].innerHTML = '';
-    //Reset current round
-    document.querySelector('.curr-round-number').textContent = 10;
-    //Initialize game
-    initGame();
-}, { once: true });
-
+//JOKER ABILTIY
+//Popup modal -> has every piece of the same color except the selected
+//Only for 1 move which is done, but if its captured the default points should be counted
 
 //round counter -> finish game -> popup dashboard for winner (or draw)
 //check for further possible steps -> if none -> end game
