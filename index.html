@@ -20,7 +20,7 @@
     <!--======== NOTIFICATIONS ========-->
     <ul class="notifications"></ul>
     <!--======== PLAYER SELECTOR ========-->
-    <section class="home active">
+    <section class="home">
         <div class="home-container">
             <img src="Assets/Others/home.png" alt="Főoldal képe" class="home-img">
             <div class="home-data-container">
@@ -53,7 +53,7 @@
         </div>
     </section>
     <!--======== MAIN ========-->
-    <section class="game">
+    <section class="game active">
         <div class="game-container">
             <div class="data-container">
                 <div class="player-component" data-player="Fekete" data-player-color="b">
@@ -121,6 +121,38 @@
                 </svg>
                 <div class="highlight"></div>
                 <div class="hover"></div>
+                <div class="promotion active">
+                    <!---
+                    data-piece is loaded from js in the same color as the selected piece
+                    every piece except the selected (if its not a pawn both direction (up/down))
+                    
+                        function getOtherPieces(selectedPieceName) {
+                        const selectedPieceColor = selectedPieceName.charAt(0);
+                        return pieces.filter(piece => piece.name.charAt(0) === selectedPieceColor && piece.name !== selectedPieceName)
+                                    .map(piece => piece.name);
+                    }
+
+                    // Example usage:
+                    const selectedPieceName = 'wp'; // Example: The selected piece is a white pawn
+                    const otherPieces = getOtherPieces(selectedPieceName);
+
+                    1. add highlight if there is a preselected element
+                       remove if there was a click on an element
+                    2. get the attribute from the promotion piece and set it to the preselected
+
+                    3. data-original-piece attribute (to save current element)
+                       data-original-direction (for pawn)
+
+                    4. after a step, check if the element has an attribute of data-original-piece -> set back default
+                       check for further attributes (original direction)
+                     -->
+                    <div class="promotion-piece" data-piece="wp" data-direction="up"></div>
+                    <div class="promotion-piece" data-piece="wp" data-direction="down"></div>
+                    <div class="promotion-piece" data-piece="wb"></div>
+                    <div class="promotion-piece" data-piece="wr"></div>
+                    <div class="promotion-piece" data-piece="wq"></div>
+                    <div class="promotion-piece" data-piece="wk"></div>
+                </div>
             </div>
         </div>
         <!--======== OUTCOME ========-->

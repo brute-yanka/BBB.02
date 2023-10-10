@@ -471,6 +471,7 @@ function initGame() {
     });
 }
 
+initGame();
 
 //JOKER ABILTIY
 //Popup modal -> has every piece of the same color except the selected
