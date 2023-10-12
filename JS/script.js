@@ -91,7 +91,7 @@ function getPos(element) {
     const x = parseFloat(match[1]);
     const y = parseFloat(match[2]);
     return { x, y };
-}
+};
 
 //========== NOTIFICATIONS ==========
 function createToast(type, icon, text) {
@@ -113,6 +113,7 @@ function createToast(type, icon, text) {
     setTimeout(() => toast.remove(), 5000);
 };
 
+initGame();
 //========== INITIALIZE ==========
 function initGame() {
     createToast('info', '<i class="ri-information-line"></i>', 'A játékot a Fehér játékos tudja kezdeni!');
@@ -144,7 +145,9 @@ function initGame() {
     })();
 
     //========== CALCULATE ALL THE VALID STEPS ==========
-    function calcValidSteps() {
+    function calcValidSteps(selectedPiece) {
+        // Initialize an array to store hint coordinates
+        const hints = [];
         //All the attributes in an object
         const attributes = getAllAttributes(selectedPiece);
         //Selected element current pos
@@ -165,12 +168,12 @@ function initGame() {
                     if (step !== null) {
                         //Occupied pos -> if not pawn -> check for diff. color
                         if (step.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0) && attributes['data-piece'].charAt(1) !== 'p')
-                            gameBoard.append(createElementWithAttributes('div', { class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${posX}%, ${posY}%)` }));
+                            hints.push({ x: posX, y: posY, isCaptureHint: true });
                         //Means that it was pawn or same color
                         break;
                     }
                     //Means there is no collision
-                    else gameBoard.append(createElementWithAttributes('div', { class: 'hint', style: `transform: translate(${posX}%, ${posY}%)` }));
+                    else hints.push({ x: posX, y: posY, isCaptureHint: false });
                 //Out of board
                 } else break;
             }
@@ -178,15 +181,25 @@ function initGame() {
             if (attributes['data-piece'].charAt(1) === 'p') {
                 const captureLeft = gameBoard.querySelector(`[style*="transform: translate(${pos.x - 100}%, ${pos.y - direction * 100}%)"]`);
                 if (captureLeft !== null && captureLeft.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
-                    gameBoard.append(createElementWithAttributes('div', { class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${pos.x - 100}%, ${pos.y - direction * 100}%)` }));
+                    hints.push({ x: pos.x - 100, y: pos.y - direction * 100, isCaptureHint: true });
                 //---
                 const captureRight = gameBoard.querySelector(`[style*="transform: translate(${pos.x + 100}%, ${pos.y - direction * 100}%)"]`);
                 if (captureRight !== null && captureRight.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0))
-                    gameBoard.append(createElementWithAttributes('div',{ class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${pos.x + 100}%, ${pos.y - direction * 100}%)` }));
+                    hints.push({ x: pos.x + 100, y: pos.y - direction * 100, isCaptureHint: true });
             }
         }
-        //Event listener to hints for movement done by click
-        gameBoard.querySelectorAll('.hint').forEach((hint) => hint.addEventListener('click', (event) => placePiece(calcPos(event, containerRect, event.target))));
+        return hints;
+    };
+
+    //Valid step helper
+    function showHints(hints) {
+        hints.forEach(hint => {
+            const hintElement = createElementWithAttributes('div', { class: 'hint', style: `transform: translate(${hint.x}%, ${hint.y}%)` });
+            if (hint.isCaptureHint) hintElement.setAttribute('data-hint', 'capture-hint');
+            gameBoard.append(hintElement);
+            // Add event listener to the hint element for click handling
+            hintElement.addEventListener('click', (event) => placePiece(calcPos(event, containerRect, event.target)));
+        });
     };
 
     //========== JOKER PROMOTION ==========
@@ -226,7 +239,7 @@ function initGame() {
                 //Removing all hints
                 gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
                 //Update all possible steps for current element
-                calcValidSteps();
+                showHints(calcValidSteps(selectedPiece));
             });
         });
     };
@@ -250,6 +263,18 @@ function initGame() {
                 playersPoint[currentPlayerIndex].textContent = parseInt(playersPoint[currentPlayerIndex].textContent) + foundPiece.points;
                 //Check end-game (by captured pieces)
                 if (parseInt(playersPoint[currentPlayerIndex].textContent) === 29) endGame();
+                //Check for further step possibility (if joker ability was used and there are no other pieces just pawns)
+                if (document.querySelector(`.player-component[data-player-color=${playerGo === 'w' ? 'b' : 'w'}] .spell-image[data-name="Joker"]`).parentNode.classList.contains('inactive') &&
+                    document.querySelectorAll(`.piece[data-piece^='${playerGo === 'w' ? 'b' : 'w'}']:not([data-piece$='p'])`).length === 0) {
+                    //Since only pawns cant attack in the way of its movement
+                    document.querySelectorAll(`.piece[data-piece^='${playerGo === 'w' ? 'b' : 'w'}p']`).forEach(pawn => {
+                        //If there is only one pawn that can move its not game-end
+                        if (calcValidSteps(pawn).length > 0)
+                            return; //No need to check further steps
+                    });
+                    //Its end-game if the joker ability is not available and the pawn(s) cant move
+                    endGame();
+                }
                 //Add captured element
                 playerCaptured[currentPlayerIndex].append(createElementWithAttributes('span', { 'data-piece': foundPiece.name }));
                 //Remove the element
@@ -363,14 +388,9 @@ function initGame() {
             //Removing all hints
             gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
             //Check for joker spell
-            if (jokerActivated) {
-                getOtherPieces(selectedPiece,
-                    selectedPiece.getAttribute('data-piece'),
-                    selectedPiece.hasAttribute('data-direction') ? selectedPiece.getAttribute('data-direction') : null
-                );
-            }
+            if (jokerActivated) getOtherPieces(selectedPiece, selectedPiece.getAttribute('data-piece'), selectedPiece.hasAttribute('data-direction') ? selectedPiece.getAttribute('data-direction') : null);
             //Calculating all possible steps for current element
-            calcValidSteps();
+            showHints(calcValidSteps(selectedPiece));
         } else {
             //If the click was out of border / not on piece / different colored piece, hide the highlight / hover
             gameBoard.querySelector('.highlight').style.cssText = `opacity: 0;`;
@@ -417,10 +437,8 @@ function initGame() {
             selectedPiece.style.zIndex = 100;
             selectedPiece.style.cursor = 'grabbing';
             gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
-            if (jokerActivated) {
-            getOtherPieces(selectedPiece, selectedPiece.getAttribute('data-piece'), selectedPiece.hasAttribute('data-direction') ? selectedPiece.getAttribute('data-direction') : null);
-            }
-            calcValidSteps();
+            if (jokerActivated) getOtherPieces(selectedPiece, selectedPiece.getAttribute('data-piece'), selectedPiece.hasAttribute('data-direction') ? selectedPiece.getAttribute('data-direction') : null);
+            showHints(calcValidSteps(selectedPiece));
         } else {
             gameBoard.querySelector('.highlight').style.cssText = `opacity: 0;`;
             gameBoard.querySelector('.hover').style.cssText = `opacity: 0;`;
