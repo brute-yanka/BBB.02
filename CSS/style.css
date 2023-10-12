@@ -346,7 +346,7 @@ section.active{
     position: relative;
     width: 500px;
     height: 750px;
-    background-image: url(/Assets/Board/board.png);
+    background-image: url(../Assets/Board/board.png);
     background-size: 100%;
     border-radius: 3px;
 }
@@ -467,61 +467,61 @@ section.active{
 }
 
 [data-name="Fagyasztás"]{
-    background-image: url(/Assets/Ability/freeze.png); /*Forrás: https: //thenounproject.com/browse/icons/term/freeze/ */
+    background-image: url(../Assets/Ability/freeze.png); /*Forrás: https: //thenounproject.com/browse/icons/term/freeze/ */
 }
 
 [data-name="Joker"]{
-    background-image: url(/Assets/Ability/joker.png); /* Forrás: https: //thenounproject.com/icon/joker-3370729/ */
+    background-image: url(../Assets/Ability/joker.png); /* Forrás: https: //thenounproject.com/icon/joker-3370729/ */
 }
 
 /* ---------- WHITE PIECES ---------- */
 [data-piece="wp"]{
-    background-image: url(/Assets/Figures/wp.png);
+    background-image: url(../Assets/Figures/wp.png);
 }
 
 [data-piece="wr"]{
-    background-image: url(/Assets/Figures/wr.png);
+    background-image: url(../Assets/Figures/wr.png);
 }
 
 [data-piece="wn"]{
-    background-image: url(/Assets/Figures/wn.png);
+    background-image: url(../Assets/Figures/wn.png);
 }
 
 [data-piece="wb"]{
-    background-image: url(/Assets/Figures/wb.png);
+    background-image: url(../Assets/Figures/wb.png);
 }
 
 [data-piece="wq"]{
-    background-image: url(/Assets/Figures/wq.png);
+    background-image: url(../Assets/Figures/wq.png);
 }
 
 [data-piece="wk"]{
-    background-image: url(/Assets/Figures/wk.png);
+    background-image: url(../Assets/Figures/wk.png);
 }
 
 /* ---------- BLACK PIECES ---------- */
 [data-piece="bp"]{
-    background-image: url(/Assets/Figures/bp.png);
+    background-image: url(../Assets/Figures/bp.png);
 }
 
 [data-piece="br"]{
-    background-image: url(/Assets/Figures/br.png);
+    background-image: url(../Assets/Figures/br.png);
 }
 
 [data-piece="bn"]{
-    background-image: url(/Assets/Figures/bn.png);
+    background-image: url(../Assets/Figures/bn.png);
 }
 
 [data-piece="bb"]{
-    background-image: url(/Assets/Figures/bb.png);
+    background-image: url(../Assets/Figures/bb.png);
 }
 
 [data-piece="bq"]{
-    background-image: url(/Assets/Figures/bq.png);
+    background-image: url(../Assets/Figures/bq.png);
 }
 
 [data-piece="bk"]{
-    background-image: url(/Assets/Figures/bk.png);
+    background-image: url(../Assets/Figures/bk.png);
 }
 
 /* ---------- PIECES ---------- */

@@ -237,8 +237,6 @@ function initGame() {
                 jokerActivated = false;
                 //Removing all hints
                 gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
-                //Update all possible steps for current element
-                showHints(calcValidSteps(selectedPiece));
             });
         });
     };
@@ -301,6 +299,11 @@ function initGame() {
             //Change player on go (if there is no active spell)
             if (!freezeActivated) {
                 playerGo = (playerGo === 'w') ? 'b' : 'w';
+                if (jokerActivated) {
+                    document.querySelector('.promotion').innerHTML = '';
+                    jokerActivated = false;
+                    createToast('info', '<i class="ri-information-line"></i>', 'Sikertelen Joker képesség használat!');
+                }
                 //Update current round
                 document.querySelector('.curr-round-number').textContent = Math.floor(currRoundsValue += 0.5);
                 //Check end-game (by rounds)
@@ -335,13 +338,8 @@ function initGame() {
         if (playerGo === color) {
             //Check for the chosen ability
             if (ability === 'Joker') {
-                //If there is no selected element, throw an error
-                if (selectedPiece) {
-                    //If the selected element is not the same color as the player on go, throw an error
-                    if (playerGo !== selectedPiece.getAttribute('data-piece').charAt(0)) {
-                        createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Jelöljön ki egy elemet!<br>(Erre lesz a lépés átmásolva.)');
-                        return; //Stop executing the function
-                    }
+                //If there is no selected element or the selected element is not the same color as the player on go, throw an error
+                if (selectedPiece && playerGo === selectedPiece.getAttribute('data-piece').charAt(0)) {
                     //Display all the possible pieces
                     getOtherPieces(selectedPiece,
                         selectedPiece.getAttribute('data-piece'),
@@ -350,6 +348,9 @@ function initGame() {
                     //Activate ability
                     jokerActivated = true;
                     notify.play(); //Play notification sound
+                } else {
+                    createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Jelöljön ki egy elemet!<br>(Erre lesz a lépés átmásolva.)');
+                    return; //Stop executing the function
                 }
             } else {
                 freezeActivated = true; //Freeze ability is activated for the player
@@ -397,7 +398,10 @@ function initGame() {
             //Reset current selected element
             dragged = false;
             //If there was a click but not on the hint element, remove all the hint
-            if(!clickedElement.classList.contains('hint')) gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
+            if (!clickedElement.classList.contains('hint') && !clickedElement.classList.contains('spell-image')) {
+                selectedPiece = null;
+                gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
+            }
         }
     };
 
