@@ -1,4 +1,4 @@
-// ========== INPUT VERIFICATION ==========
+//========== INPUT VERIFICATION ==========
 //Main variables
 const players = document.querySelectorAll('.player-name');
 const avatars = document.querySelectorAll('.player-avatar');
@@ -8,6 +8,7 @@ let playerBlack = null;
 let playerWhite = null;
 let roundsValue = null;
 
+createToast('info', '<i class="ri-information-line"></i>', '1 kör = Mindkét játékos lép!<br>(Kivéve képesség volt aktiválva!)');
 function verifyInput() {
     //Selectors for further usage
     playerBlack = document.getElementById('player1').value.trim();
@@ -43,7 +44,7 @@ document.getElementById('start').addEventListener('click', () => {
     }
 });
 
-// ========== BASIC FUNCTIONS ==========
+//========== BASIC FUNCTIONS ==========
 //Helper for element creation
 function createElementWithAttributes(tag, attributes, innerHTML) {
     const element = document.createElement(tag);
@@ -85,7 +86,7 @@ function getPos(element) {
     return { x, y };
 }
 
-// ========== NOTIFICATIONS ==========
+//========== NOTIFICATIONS ==========
 function createToast(type, icon, text) {
     const container = document.querySelector('.notifications'); //Container to append toast
     //Create toast with custom parameters
@@ -105,7 +106,7 @@ function createToast(type, icon, text) {
     setTimeout(() => toast.remove(), 5000);
 };
 
-// ========== INITIALIZE ==========
+//========== INITIALIZE ==========
 function initGame() {
     createToast('info', '<i class="ri-information-line"></i>', 'A játékot a Fehér játékos tudja kezdeni!');
     const gameBoard = document.querySelector('.game-board');
@@ -118,13 +119,14 @@ function initGame() {
     let playerGo = 'w'; //Player on go
     let freezeActivated = false; //Freeze spell
     let jokerActivated = false; //Joker spell
+    let currRoundsValue = 0 //For current round
     //These are for calculation like -> transform: translate(100%, 100%);
     const boardWidth = 700;
     const boardHeight = 1100;
     //For displaying points and captured pieces
     const playersPoint = document.querySelectorAll('.player-name span');
 
-    // ========== CALCULATE ALL THE VALID STEPS ==========
+    //========== CALCULATE ALL THE VALID STEPS ==========
     function calcValidSteps() {
         //All the attributes in an object
         const attributes = getAllAttributes(selectedPiece);
@@ -170,7 +172,7 @@ function initGame() {
         gameBoard.querySelectorAll('.hint').forEach((hint) => hint.addEventListener('click', (event) => placePiece(calcPos(event, containerRect, event.target))));
     };
 
-    // ========== JOKER PROMOTION ==========
+    //========== JOKER PROMOTION ==========
     function getOtherPieces(selectedPiece, selectedPieceName, selectedPieceDirection) {
         //Empty the container
         document.querySelector('.promotion').innerHTML = '';
@@ -212,28 +214,33 @@ function initGame() {
         });
     };
 
-    // ========== PIECE PLACEMENT HANDLER ==========
+    //========== PIECE PLACEMENT HANDLER ==========
     function placePiece(pos) {
         //The current position is valid if there is a hint
         const valid = gameBoard.querySelector(`.hint[style*="transform: translate(${pos.x}%, ${pos.y}%)"]`);
         //If its not null (there is a hint element)
         if (valid) {
-            //Capture check
+            //Check capture possibility
             if (valid.getAttribute('data-hint') !== null) {
                 capture.play(); //Capture sound
                 //Select capture piece for further usage(points, captured pieces)
                 const capturedPiece = gameBoard.querySelector(`.piece[style*="transform: translate(${pos.x}%, ${pos.y}%)"]`);
-                const foundPiece = pieces.find(piece => piece.name === capturedPiece.getAttribute('data-piece'));
+                //Check if captured element is joker (only the default pieces point are added)
+                const pieceName = capturedPiece.hasAttribute('data-original-piece') ? capturedPiece.getAttribute('data-original-piece') : capturedPiece.getAttribute('data-piece');
+                const foundPiece = pieces.find(piece => piece.name === pieceName);
                 //The player on turn gets the points and the captured piece
                 const currentPlayerIndex = (playerGo === 'w') ? 1 : 0;
                 playersPoint[currentPlayerIndex].textContent = parseInt(playersPoint[currentPlayerIndex].textContent) + foundPiece.points;
+                //Check end-game (by captured pieces)
+                if (parseInt(playersPoint[currentPlayerIndex].textContent) === 29) endGame();
+                //Add captured element
                 playerCaptured[currentPlayerIndex].append(createElementWithAttributes('span', { 'data-piece': foundPiece.name }));
-                //Removing the element
+                //Remove the element
                 capturedPiece.remove();
             } else click.play(); //Basic move -> click sound
             //Moves the selected element / highlight / hover to the clicked position
             selectedPiece.style.transform = `translate(${pos.x}%,${pos.y}%)`;
-            // Check if the element has the data-original attribute
+            //Check if the element has the data-original attribute
             if (selectedPiece.hasAttribute('data-original-piece')) {
                 //If so there was a valid step with it so change it back to its original attribute
                 selectedPiece.setAttribute('data-piece', selectedPiece.getAttribute('data-original-piece'));
@@ -246,15 +253,19 @@ function initGame() {
             gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
             gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
             //If the piece is a pawn and it has reached the enemy's baseline change direction vice-versa;
-            if (selectedPiece.getAttribute('data-piece').charAt(1) === 'p') {
-                if (selectedPiece.getAttribute('data-direction') === 'up' && pos.y === 0) selectedPiece.setAttribute('data-direction', 'down');
-                else if (selectedPiece.getAttribute('data-direction') === 'down' && pos.y === boardHeight) selectedPiece.setAttribute('data-direction', 'up');
-            }
+            if (selectedPiece.getAttribute('data-direction') === 'up' && pos.y === 0) selectedPiece.setAttribute('data-direction', 'down');
+            else if (selectedPiece.getAttribute('data-direction') === 'down' && pos.y === boardHeight) selectedPiece.setAttribute('data-direction', 'up');
             //The move was successful, so remove all the hints
             gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
             //Change player on go (if there is no active spell)
-            if (!freezeActivated) playerGo = (playerGo === 'w') ? 'b' : 'w';
-            freezeActivated = false;
+            if (!freezeActivated) {
+                playerGo = (playerGo === 'w') ? 'b' : 'w';
+                //Update current round
+                document.querySelector('.curr-round-number').textContent = Math.floor(currRoundsValue += 0.5);
+                //Check end-game (by rounds)
+                if (Math.floor(currRoundsValue) === roundsValue) endGame();
+            }
+            else freezeActivated = false;
         } else {
             //If the selected position is not the original position
             if (pos.x !== selectedPiecePos.x || pos.y !== selectedPiecePos.y) {
@@ -273,7 +284,7 @@ function initGame() {
         dragged = false;
     };
 
-    // ========== ABILITY HANDLER ==========
+    //========== ABILITY HANDLER ==========
     function abilityHandler() {
         //Selectors for further usage
         const player = this.closest('.player-component').getAttribute('data-player');
@@ -284,17 +295,20 @@ function initGame() {
             //Check for the chosen ability
             if (ability === 'Joker') {
                 //If there is no selected element, throw an error
-                if (!selectedPiece) {
-                    createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Jelöljön ki egy elemet!<br>(Erre lesz a lépés átmásolva.)');
-                    return; //Stop executing the function
+                if (selectedPiece) {
+                    //If the selected element is not the same color as the player on go, throw an error
+                    if (playerGo !== selectedPiece.getAttribute('data-piece').charAt(0)) {
+                        createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Jelöljön ki egy elemet!<br>(Erre lesz a lépés átmásolva.)');
+                        return; //Stop executing the function
+                    }
+                    //Display all the possible pieces
+                    getOtherPieces(selectedPiece,
+                        selectedPiece.getAttribute('data-piece'),
+                        selectedPiece.hasAttribute('data-direction') ? selectedPiece.getAttribute('data-direction') : null
+                    );
+                    //Activate ability
+                    jokerActivated = true;
                 }
-                //Display all the possible pieces
-                getOtherPieces(selectedPiece,
-                    selectedPiece.getAttribute('data-piece'),
-                    selectedPiece.hasAttribute('data-direction') ? selectedPiece.getAttribute('data-direction') : null
-                );
-                //Activate ability
-                jokerActivated = true;
             } else {
                 freezeActivated = true; //Freeze ability is activated for the player
                 createToast('success', '<i class="ri-check-line"></i>', `${player} játékos sikeresen aktiválta a fagyasztás képességet!`);
@@ -307,7 +321,7 @@ function initGame() {
         }
     };
 
-    // ========== MOVING PIECES WITH DRAG & DROP ==========
+    //========== MOVING PIECES WITH DRAG & DROP ==========
     function onMouseDown(event) {
         //Prevent default drag&drop
         event.preventDefault();
@@ -349,19 +363,18 @@ function initGame() {
 
     function onMouseMove(event) {
         //Only do calculation if there is a selected element
-        if (dragged) {
-            //min & max is to keep the transformed element within border
-            //480 is default width but only the half of the element can go out (design), so 480-30
-            const x = Math.min(450, Math.max(-30, event.clientX - containerRect.left - selectedPiece.getBoundingClientRect().width / 2));
-            //720 is default height but only the half of the element can go out (design), so 720-30
-            const y = Math.min(690, Math.max(-30, event.clientY - containerRect.top - selectedPiece.getBoundingClientRect().height / 2));
-            //Update position of selected element
-            selectedPiece.style.transform = `translate(${x}px,${y}px)`;
-            //Current cursor position
-            const pos = calcPos(event, containerRect, selectedPiece);
-            //Update hover position according to cursor position
-            gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
-        }
+        if (!dragged) return;
+        //min & max is to keep the transformed element within border
+        //480 is default width but only the half of the element can go out (design), so 480-30
+        const x = Math.min(450, Math.max(-30, event.clientX - containerRect.left - selectedPiece.getBoundingClientRect().width / 2));
+        //720 is default height but only the half of the element can go out (design), so 720-30
+        const y = Math.min(690, Math.max(-30, event.clientY - containerRect.top - selectedPiece.getBoundingClientRect().height / 2));
+        //Update position of selected element
+        selectedPiece.style.transform = `translate(${x}px,${y}px)`;
+        //Current cursor position
+        const pos = calcPos(event, containerRect, selectedPiece);
+        //Update hover position according to cursor position
+        gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
     };
 
     function onMouseUp(event) {
@@ -370,7 +383,7 @@ function initGame() {
         placePiece(calcPos(event, containerRect, selectedPiece));
     };
 
-    // ========== INITIALIZE EVENT LISTENERS (self-calling) ==========
+    //========== INITIALIZE EVENT LISTENERS (self-calling) ==========
     (function() {
         gameBoard.addEventListener('mousedown', onMouseDown);
         document.addEventListener('mousemove', onMouseMove);
@@ -380,7 +393,7 @@ function initGame() {
         window.addEventListener("resize", updateClientRect); //Need to update the gameBoard bounding rect on resize to avoid incorrect calculations
     })();
 
-    // ========== CREATE BOARD PIECES ==========
+    //========== CREATE BOARD PIECES ==========
     pieces.forEach((piece) => {
         //Position arrays length means the number of elements
         for (let i = 0; i < piece.position.length; i++){
@@ -395,10 +408,10 @@ function initGame() {
         }
     });
 
-    // ========== RESET GAME ==========
+    //========== RESET GAME ==========
     function resetGame() {
-        //Remove outcome panel display
-        document.querySelector('.outcome').classList.remove('active');
+        //Remove endgame panel display
+        document.querySelector('.endgame').classList.remove('active');
         //Restore event listeners (to avoid duplicates)
         gameBoard.removeEventListener('mousedown', onMouseDown);
         document.removeEventListener('mousemove', onMouseMove);
@@ -426,15 +439,17 @@ function initGame() {
         initGame();
     }
 
-    // ========== OUTCOME ==========
-    function outCome() {
+    //========== ENDGAME ==========
+    function endGame() {
+        //Stop dragging
+        dragged = false;
         //Selectors for further usage
-        const container = document.querySelector('.outcome');
+        const container = document.querySelector('.endgame');
         const homeButton = document.getElementById('home');
         const player1Points = parseInt(playersPoint[0].textContent);
         const player2Points = parseInt(playersPoint[1].textContent);
         const images = document.querySelectorAll('.modal-box-player img');
-        //Display outcome panel
+        //Display endgame panel
         container.classList.add('active');
         //Check if user want to go to home page
         homeButton.addEventListener('click', () => {
@@ -447,23 +462,19 @@ function initGame() {
         //Set winner
         if (player1Points > player2Points) {
             document.querySelector('.modal-box > h3').innerHTML = `<span>${playerWhite}</span> a győztes!`;
-            images[0].setAttribute('data-winner');
+            images[0].setAttribute('data-winner', '');
         } else if (player1Points < player2Points) {
             document.querySelector('.modal-box > h3').innerHTML = `<span>${playerBlack}</span> a győztes!`;
-            images[1].setAttribute('data-winner');
+            images[1].setAttribute('data-winner', '');
 
         } else {
             document.querySelector('.modal-box > h3').innerHTML = `Döntetlen!`;
+            //If there was previous round and there was a winner -> remove for current round
+            images[0].removeAttribute('data-winner');
+            images[1].removeAttribute('data-winner');
         }
         //Change values
         images.forEach((image, index) => image.src = avatars[index].src);
         document.querySelectorAll('.modal-box-player p span').forEach((points, index) => points.textContent = players[index].querySelector('span').textContent);
     };
 }
-
-//!!!
-//round counter -> finish game -> popup dashboard for winner (or draw)
-//check for further possible steps -> if none -> end game
-// iv)Az a játékos nyer, aki először szedi le az ellenfele minden bábuját.
-// Ha ennyi kör alatt senki sem nyer, a játszma akkor is érjen véget, és az oldal hirdessen győztest a leütött figurák pontjai alapján
-///!!!

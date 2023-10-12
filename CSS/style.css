@@ -566,6 +566,15 @@ section.active{
     color: var(--error);
 }
 
+.piece[data-original-piece]::after{
+    content: '\2605';
+    position: absolute;
+    top: -0.25rem;
+    right: 0.1rem;
+    color: var(--warning);
+    font-size: var(--font-size-4);
+}
+
 /* ---------- VISUAL DESIGN ---------- */
 .highlight{
     position: absolute;
@@ -727,8 +736,8 @@ section.active{
     cursor: pointer;
 }
 
-/* ========== OUTCOME ========== */
-.outcome{
+/* ========== ENDGAME ========== */
+.endgame{
     position: fixed;
     justify-content: center;
     align-items: center;
@@ -742,12 +751,12 @@ section.active{
     z-index: 100;
 }
 
-.outcome.active{
+.endgame.active{
     display: flex;
     pointer-events: auto;
 }
 
-.outcome .layer{
+.endgame .layer{
     position: absolute;
     top: 0;
     left: 0;
@@ -756,7 +765,7 @@ section.active{
     background: rgba(0, 0, 0, 0.7);
 }
 
-.modal-box{
+.endgame .modal-box{
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -769,23 +778,23 @@ section.active{
     z-index: 110;
 }
 
-.modal-box i{
+.endgame .modal-box i{
     font-size: var(--font-size-1);
     font-weight: var(--font-weight-400);
     color: var(--primary-color);
 }
 
-.modal-box h2,
-.modal-box h3{
+.endgame .modal-box h2,
+.endgame .modal-box h3{
     color: var(--primary-color);
     font-weight: var(--font-weight-600);
 }
 
-.modal-box h3 span{
+.endgame .modal-box h3 span{
     color: var(--success);
 }
 
-.modal-box .modal-box-players{
+.endgame .modal-box .modal-box-players{
     display: flex;
     justify-content: center;
     align-items: center;
@@ -793,24 +802,24 @@ section.active{
     gap: 1.5rem;
 }
 
-.modal-box .modal-box-players img{
+.endgame .modal-box .modal-box-players img{
     border: 4px solid var(--primary-color);
     max-width: 70px;
     height: auto;
 }
 
-.modal-box .modal-box-players img[data-winner]{
+.endgame .modal-box .modal-box-players img[data-winner]{
     border: 4px solid var(--success);
 }
 
-.modal-box .modal-box-players > p{
+.endgame .modal-box .modal-box-players > p{
     font-size: var(--font-size-3);
     font-weight: var(--font-weight-500);
     color: var(--primary-color);
     margin-bottom: 1.5rem;
 }
 
-.modal-box-points{
+.endgame .modal-box-points{
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -819,7 +828,7 @@ section.active{
     padding: 0 6rem;
 }
 
-.modal-buttons{
+.endgame .modal-buttons{
     display: flex;
     justify-content: center;
     align-items: center;
@@ -827,7 +836,7 @@ section.active{
     margin-top: 1.5rem;
 }
 
-.modal-button{
+.endgame .modal-button{
     font-size: var(--font-size-4);
     font-weight: var(--font-weight-400);
     color: var(--white-color);
@@ -840,7 +849,7 @@ section.active{
     transition: var(--transition-1);
 }
 
-.modal-button:hover{
+.endgame .modal-button:hover{
     background: var(--white-color);
     color: var(--primary-color);
     box-shadow: inset 0 0 5px var(--primary-color);
