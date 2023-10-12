@@ -542,8 +542,10 @@ section.active{
 .promotion-piece[data-direction="down"]::before{
     position: absolute;
     font-size: var(--font-size-3);
+    font-size: var(--font-size-3);
     font-weight: var(--font-weight-600);
     color: var(--primary-color);
+    left: 0.15rem;
     left: 0.15rem;
     z-index: 3;
 }
@@ -553,12 +555,14 @@ section.active{
     content: '\2191';
     top: 0.15rem;
     color: var(--success);
+    color: var(--success);
 }
 
 .piece[data-piece$="p"][data-direction="down"]::before,
 .promotion-piece[data-direction="down"]::before{
     content: '\2193';
     bottom: 0.15rem;
+    color: var(--error);
     color: var(--error);
 }
 
