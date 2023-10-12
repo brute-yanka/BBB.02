@@ -461,10 +461,10 @@ function initGame() {
         });
         //Set winner
         if (player1Points > player2Points) {
-            document.querySelector('.modal-box > h3').innerHTML = `<span>${playerWhite}</span> a győztes!`;
+            document.querySelector('.modal-box > h3').innerHTML = `<span>${playerBlack}</span> a győztes!`;
             images[0].setAttribute('data-winner', '');
         } else if (player1Points < player2Points) {
-            document.querySelector('.modal-box > h3').innerHTML = `<span>${playerBlack}</span> a győztes!`;
+            document.querySelector('.modal-box > h3').innerHTML = `<span>${playerWhite}</span> a győztes!`;
             images[1].setAttribute('data-winner', '');
 
         } else {
