@@ -330,6 +330,7 @@ section.active{
 
 .game-container{
     display: flex;
+    align-items: center;
     gap: 4.5rem;
 }
 
@@ -343,8 +344,8 @@ section.active{
 
 .game-board{
     position: relative;
-    width: 480px;
-    height: 720px;
+    width: 500px;
+    height: 750px;
     background-image: url(/Assets/Board/board.png);
     background-size: 100%;
     border-radius: 3px;
@@ -369,7 +370,7 @@ section.active{
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     max-width: 100%;
     gap: 1.2rem;
@@ -531,8 +532,8 @@ section.active{
     top: 0;
     background-size: 100%;
     cursor: grab;
-    height: 8.333333333333%;
     width: 12.5%;
+    height: 8.3333333%;
     z-index: 2;
 }
 

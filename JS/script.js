@@ -72,8 +72,15 @@ function initPos(input) {
 
 //Calculate position relative to the container (rounded for grid display)
 function calcPos(event, container, piece) {
-    const x = Math.round(Math.min(449, Math.max(-29, event.clientX - container.left - piece.getBoundingClientRect().width / 2)) / 60) * 100;
-    const y = Math.round(Math.min(689, Math.max(-29, event.clientY - container.top - piece.getBoundingClientRect().height / 2)) / 60) * 100;
+    const pieceWidth = piece.getBoundingClientRect().width;
+    const pieceHeight = piece.getBoundingClientRect().height;
+    const maxX = container.width - pieceWidth / 2 - 1; //Need to subtract the half of the elements width to keep element inside board
+    const maxY = container.height - pieceHeight / 2 - 1; //Need to subtract the half of the elements height to keep element inside board
+    const minX = -(pieceWidth / 2 - 1); //To keep element inside board
+    const minY = -(pieceHeight / 2 - 1); //To keep element inside board
+    //Need to divide with the piece width / height which is rounded and then multiplied by 100, so the result is a gridish appearance
+    const x = Math.round(Math.min(maxX, Math.max(minX, event.clientX - container.left - pieceWidth / 2)) / pieceWidth) * 100;
+    const y = Math.round(Math.min(maxY, Math.max(minY, event.clientY - container.top - pieceHeight / 2)) / pieceHeight) * 100;
     return { x, y };
 };
 
