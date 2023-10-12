@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Open+Sans:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap');
-
 /* ========== REUSABLE ========== */
 :root{
     --primary-color: #474448;
@@ -78,24 +77,6 @@ img{
     max-width: 100%;
     height: auto;
 }
-
-.section-title{
-    position: relative;
-    text-align: center;
-    font-size: var(--font-size-1);
-    font-weight: var(--font-weight-600);
-    color: var(--title-color);
-    margin: 1.5rem 0 1.5rem 1.5rem;
-}
-
-.horizontal-rule{
-    max-width: 80%;
-    margin: 0 auto;
-    border: 1px solid var(--text-color);
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-}
-
 /* ========== ACTIVE SECTION ========== */
 section{
     display: none;
@@ -237,7 +218,7 @@ section.active{
     font-size: 15px;
 }
 
-/* ========== PLAYER SELECTOR ========== */
+/* ---------- PLAYER SELECTOR ---------- */
 .player-container{
     display: flex;
     flex-direction: column;
@@ -383,6 +364,7 @@ section.active{
     font-weight: var(--font-weight-500);
 }
 
+/* ---------- PLAYER DATA ---------- */
 .player-component{
     position: relative;
     display: flex;
@@ -448,6 +430,7 @@ section.active{
     color: var(--title-color);
 }
 
+/* ---------- ABILITIES ---------- */
 .player-ability-container{
     display: flex;
     justify-content: space-between;
@@ -490,8 +473,7 @@ section.active{
     background-image: url(/Assets/Ability/joker.png); /* Forrás: https: //thenounproject.com/icon/joker-3370729/ */
 }
 
-/* ========== WHITE CAPTURED FIGURES ========== */
-/* Az összes felhasznált bábu és a játéktábla a chess.com hivatalos oldaláról származik */
+/* ---------- WHITE PIECES ---------- */
 [data-piece="wp"]{
     background-image: url(/Assets/Figures/wp.png);
 }
@@ -516,7 +498,7 @@ section.active{
     background-image: url(/Assets/Figures/wk.png);
 }
 
-/* ========== BLACK CAPTURED FIGURES ========== */
+/* ---------- BLACK PIECES ---------- */
 [data-piece="bp"]{
     background-image: url(/Assets/Figures/bp.png);
 }
@@ -541,7 +523,7 @@ section.active{
     background-image: url(/Assets/Figures/bk.png);
 }
 
-/* ========== BOARD FIGURES ========== */
+/* ---------- PIECES ---------- */
 .piece{
     position: absolute;
     overflow: hidden;
@@ -554,26 +536,33 @@ section.active{
     z-index: 2;
 }
 
-.piece[data-direction="up"]::before,
-.piece[data-direction="down"]::before{
+.piece[data-piece$="p"][data-direction="up"]::before,
+.promotion-piece[data-direction="up"]::before,
+.piece[data-piece$="p"][data-direction="down"]::before,
+.promotion-piece[data-direction="down"]::before{
     position: absolute;
-    font-size: var(--font-size-4);
+    font-size: var(--font-size-3);
     font-weight: var(--font-weight-600);
     color: var(--primary-color);
-    left: 0.25rem;
+    left: 0.15rem;
     z-index: 3;
 }
 
-.piece[data-direction="up"]::before{
+.piece[data-piece$="p"][data-direction="up"]::before,
+.promotion-piece[data-direction="up"]::before{
     content: '\2191';
     top: 0.15rem;
+    color: var(--success);
 }
 
-.piece[data-direction="down"]::before{
+.piece[data-piece$="p"][data-direction="down"]::before,
+.promotion-piece[data-direction="down"]::before{
     content: '\2193';
     bottom: 0.15rem;
+    color: var(--error);
 }
 
+/* ---------- VISUAL DESIGN ---------- */
 .highlight{
     position: absolute;
     top: 0;
@@ -605,6 +594,32 @@ section.active{
     background-clip: content-box;
     padding: 4.2%;
     background-color: rgba(0,0,0,0.1);
+}
+
+/* ---------- PROMOTION ---------- */
+.promotion{
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    right: -70px;
+    top: 180px;
+    background-color: var(--secondary-color);
+    border-radius: 0.5rem;
+}
+
+.promotion-piece{
+    position: relative;
+    background-size: 100%;
+    overflow: hidden;
+    width: 60px;
+    height: 60px;
+    transition: var(--transition-1);
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.promotion-piece:hover{
+    box-shadow: inset 0 0 5px var(--title-color);
 }
 
 [data-hint="capture-hint"]{
@@ -828,7 +843,7 @@ section.active{
 }
 
 /* ========== MEDIA QUERY ========== */
-@media screen and (max-width: 800px){
+@media screen and (max-width: 920px){
     section{
         display: none !important;
     }

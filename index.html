@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
+    <!-- !Az összes felhasznált bábu és a játéktábla a chess.com hivatalos oldaláról származik! -->
+    <!--======== METADATA ========-->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="keywords" content="">
-    <meta name="author" content="">
+    <meta name="description" content="Játssz online sakkot kihívással! Az alapfelállás a hagyományos sakkhoz hasonló, de a játék szabályai néhány eltéréssel rendelkeznek. Fedezd fel a sakk új dimenzióját ezen izgalmas játék során.">
+    <meta name="keywords" content="online sakk, sakk játék, 8x12 sakk tábla, különleges képességek, joker lépés, dupla lépés">
+    <meta name="author" content="Nyíregyházi Kölcsey Ferenc Gimnázium 12.C Informatika Tagozat">
     <link rel="icon" href="Assets/Others/favicon.svg" type="image/x-icon">
     <title>Bakonyi Bitfaragó Verseny 2023 - 2. forduló</title>
     <!--======== CSS ========-->
@@ -19,7 +21,7 @@
 <body>
     <!--======== NOTIFICATIONS ========-->
     <ul class="notifications"></ul>
-    <!--======== PLAYER SELECTOR ========-->
+    <!--======== HOME ========-->
     <section class="home active">
         <div class="home-container">
             <img src="Assets/Others/home.png" alt="Főoldal képe" class="home-img">
@@ -55,10 +57,11 @@
     <!--======== MAIN ========-->
     <section class="game">
         <div class="game-container">
+            <!--======== PLAYERS ========-->
             <div class="data-container">
                 <div class="player-component" data-player="Fekete" data-player-color="b">
                     <img src="Assets/Avatar/1.png" alt="Kép" class="player-avatar">
-                    <div class="player-name"></div>
+                    <div class="player-name"><span>0</span></div>
                     <div class="player-ability-container">
                         <div class="player-ability">
                             <div class="spell">
@@ -121,6 +124,7 @@
                 </svg>
                 <div class="highlight"></div>
                 <div class="hover"></div>
+                <div class="promotion"></div>
             </div>
         </div>
         <!--======== OUTCOME ========-->

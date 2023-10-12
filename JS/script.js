@@ -25,7 +25,7 @@ function verifyInput() {
     }
     //If all checks pass, return true to indicate valid input
     return true;
-}
+};
 
 document.getElementById('start').addEventListener('click', () => {
     if (verifyInput()) {
@@ -60,19 +60,28 @@ function getAllAttributes(element) {
         attributesObject[attributeName] = attributeValue;
     });
     return attributesObject;
-}
+};
 
 //String to int (used for initial position ('12'))
-function calcPos(input) {
+function initPos(input) {
     const translateX = 800 - parseInt(input[0]) * 100;
     const translateY = 1200 - parseInt(input[1] + input[2]) * 100;
     return `transform: translate(${translateX}%, ${translateY}%)`;
-}
+};
 
-//Position getter relative to the container (rounded for grid display)
-function getPos(event, container, piece) {
+//Calculate position relative to the container (rounded for grid display)
+function calcPos(event, container, piece) {
     const x = Math.round(Math.min(449, Math.max(-29, event.clientX - container.left - piece.getBoundingClientRect().width / 2)) / 60) * 100;
     const y = Math.round(Math.min(689, Math.max(-29, event.clientY - container.top - piece.getBoundingClientRect().height / 2)) / 60) * 100;
+    return { x, y };
+};
+
+//Get position from elements attribute
+function getPos(element) {
+    const style = element.getAttribute('style');
+    const match = /translate\(([^,]+),\s*([^,]+)\)/.exec(style);
+    const x = parseFloat(match[1]);
+    const y = parseFloat(match[2]);
     return { x, y };
 }
 
@@ -94,7 +103,7 @@ function createToast(type, icon, text) {
     toast.querySelector('.ri-close-line').addEventListener('click', () => toast.remove());
     //Remove automatically after 5s
     setTimeout(() => toast.remove(), 5000);
-}
+};
 
 // ========== INITIALIZE ==========
 function initGame() {
@@ -103,55 +112,24 @@ function initGame() {
     let containerRect = gameBoard.getBoundingClientRect();
     function updateClientRect() { containerRect = gameBoard.getBoundingClientRect(); }
 
-    let selectedPiece = null; //Currently selected element (for drag&drop)
-    let preSelectedPiece = null; //This is for the joker spell
-    let hintActive = null; //Currently selected element (for click)
-    let selectedPiecePos; //Selected piece position (if move was illegal set the elmenet to its original pos)
+    let selectedPiece = null; //Currently selected element
+    let selectedPiecePos = null; //Selected piece position (if move was illegal set the elmenet to its original pos)
+    let dragged = false; //For drag&drop
     let playerGo = 'w'; //Player on go
     let freezeActivated = false; //Freeze spell
+    let jokerActivated = false; //Joker spell
     //These are for calculation like -> transform: translate(100%, 100%);
     const boardWidth = 700;
     const boardHeight = 1100;
     //For displaying points and captured pieces
     const playersPoint = document.querySelectorAll('.player-name span');
 
-    // ========== ABILITY HANDLER ==========
-    function abilityHandler() {
-        //Selectors for further usage
-        const player = this.closest('.player-component').getAttribute('data-player');
-        const color = this.closest('.player-component').getAttribute('data-player-color');
-        const ability = this.querySelector('.spell-image').getAttribute('data-name');
-        //Check if the clicked spell was the player on go
-        if (playerGo === color) {
-            //Check for the chosen ability
-            if (ability === 'Joker') {
-                //If there is no pre-selected element, throw an error
-                if (!hintActive) {
-                    createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Jelöljön ki egy elemet!<br>(Erről lesz a lépés átmásolva.)');
-                    return; //Stop executing the function
-                }
-                //This is the pre-selected element -> use its attribute and set the post-selected attribute to it
-                preSelectedPiece = hintActive;
-                //Giving information to the user
-                createToast('info', '<i class="ri-information-line"></i>', 'Jelöljön ki egy elemet!<br>(Erre lesz a lépés átmásolva.)');
-            } else {
-                freezeActivated = true; //Freeze ability is activated for the player
-                createToast('success', '<i class="ri-check-line"></i>', `${player} játékos sikeresen aktiválta a fagyasztás képességet!`);
-                createToast('info', '<i class="ri-information-line"></i>', `${player} játékos kettőt tud lépni!`);
-            }
-            //Make the selected spell inactive
-            this.querySelector('.spell').classList.add('inactive');
-            //Remove listener not to use ability again (in the current round)
-            this.removeEventListener('click', abilityHandler);
-        }
-    }
-
     // ========== CALCULATE ALL THE VALID STEPS ==========
-    function calcValidSteps(event) {
+    function calcValidSteps() {
         //All the attributes in an object
         const attributes = getAllAttributes(selectedPiece);
         //Selected element current pos
-        const pos = getPos(event, containerRect, selectedPiece);
+        const pos = getPos(selectedPiece);
         //Further information about the selected piece from the pieces array
         const pieceInfo = pieces.find(piece => piece.name === attributes['data-piece']);
         //moves array.length - 1 -> for overflow
@@ -170,7 +148,7 @@ function initGame() {
                         if (step.getAttribute('data-piece').charAt(0) !== attributes['data-piece'].charAt(0) && attributes['data-piece'].charAt(1) !== 'p')
                             gameBoard.append(createElementWithAttributes('div', { class: 'hint', 'data-hint': 'capture-hint', style: `transform: translate(${posX}%, ${posY}%)` }));
                         //Means that it was pawn or same color
-                        break; 
+                        break;
                     }
                     //Means there is no collision
                     else gameBoard.append(createElementWithAttributes('div', { class: 'hint', style: `transform: translate(${posX}%, ${posY}%)` }));
@@ -189,79 +167,53 @@ function initGame() {
             }
         }
         //Event listener to hints for movement done by click
-        gameBoard.querySelectorAll('.hint').forEach((hint) => hint.addEventListener('click', movePieceClick));
-    }
+        gameBoard.querySelectorAll('.hint').forEach((hint) => hint.addEventListener('click', (event) => placePiece(calcPos(event, containerRect, event.target))));
+    };
 
-    // ========== MOVING PIECES WITH DRAG & DROP ==========
-    function onMouseDown(event) {
-        event.preventDefault();
-        const clickedElement = event.target;
-        //Check if clicked element is a piece and its color equals to player on go
-        if (clickedElement.classList.contains('piece') && clickedElement.getAttribute('data-piece').charAt(0) === playerGo) {
-            //Start drag
-            selectedPiece = clickedElement;
-            //Dragged element position
-            const pos = getPos(event, containerRect, selectedPiece);
-            //Moving the highlight / hover to the current position
-            gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
-            gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
-            //Saving current position, because of the move was incorrect the piece will be placed back to its origin position
-            selectedPiecePos = pos;
-            //Display settings
-            selectedPiece.style.zIndex = 100;
-            selectedPiece.style.cursor = 'grabbing';
-            //Removing all hints if theres any
-            gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
-            //Check for joker spell
-            if (preSelectedPiece) {
-                //Save its original attribute
-                selectedPiece.setAttribute('data-original', selectedPiece.getAttribute('data-piece'));
-                //Check if pre-selected and selected piece is a pawn
-                if (selectedPiece.getAttribute('data-piece').charAt(1) === 'p' && preSelectedPiece.getAttribute('data-piece').charAt(1) === 'p') {
-                    //Need to save the original direction
-                    selectedPiece.setAttribute('data-original-direction', selectedPiece.getAttribute('data-direction'));
-                    //Change the direction to the selected pieces direction
-                    selectedPiece.setAttribute('data-direction', preSelectedPiece.getAttribute('data-direction'));
-                }
-                //Change the selected pieces attribute to the pre-selected pieces attribute
-                selectedPiece.setAttribute('data-piece', preSelectedPiece.getAttribute('data-piece'));
-                //Reset pre-selected piece
-                preSelectedPiece = null;
-                createToast('success', '<i class="ri-check-line"></i>', `Joker képesség sikeresen aktiválva!`);
+    // ========== JOKER PROMOTION ==========
+    function getOtherPieces(selectedPiece, selectedPieceName, selectedPieceDirection) {
+        //Empty the container
+        document.querySelector('.promotion').innerHTML = '';
+        //Check if selected piece is a pawn
+        if (selectedPieceDirection) {
+            //Append a pawn that goes the opposite direction
+            document.querySelector('.promotion').append(createElementWithAttributes('div', { class: 'promotion-piece', 'data-piece': `${selectedPieceName.charAt(0)}p`, 'data-direction': selectedPieceDirection === 'up' ? 'down' : 'up' }));
+        }
+        //Get every piece (except the selected) that has the same color
+        pieces.filter(piece => piece.name.charAt(0) === selectedPieceName.charAt(0) && piece.name !== selectedPieceName).forEach(piece => {
+            //If the selected piece is not pawn both direction should be appened
+            if (piece.name.charAt(1) === 'p') {
+                document.querySelector('.promotion').append(createElementWithAttributes('div', { class: 'promotion-piece', 'data-piece': piece.name, 'data-direction': 'up' }));
+                document.querySelector('.promotion').append(createElementWithAttributes('div', { class: 'promotion-piece', 'data-piece': piece.name, 'data-direction': 'down' }));
+            } else {
+                document.querySelector('.promotion').append(createElementWithAttributes('div', { class: 'promotion-piece', 'data-piece': piece.name }));
             }
-            //Calculating all possible steps for current element
-            calcValidSteps(event);
-        } else {
-            //If the click was out of border / not on piece / different colored piece, hide the highlight / hover
-            gameBoard.querySelector('.highlight').style.cssText = `opacity: 0;`;
-            gameBoard.querySelector('.hover').style.cssText = `opacity: 0;`;
-            //Reset current selected element
-            selectedPiece = null;
-        }
+        });
+        //Add event listener to the elements
+        document.querySelectorAll('.promotion-piece').forEach(piece => {
+            piece.addEventListener('click', (event) => {
+                //Save current piece attributes
+                selectedPiece.setAttribute('data-original-piece', selectedPiece.getAttribute('data-piece'));
+                selectedPiece.setAttribute('data-original-direction', selectedPiece.getAttribute('data-direction'));
+                //Update current piece attributes
+                selectedPiece.setAttribute('data-piece', event.target.getAttribute('data-piece'));
+                selectedPiece.setAttribute('data-direction', event.target.getAttribute('data-direction'));
+                //Empty the container
+                document.querySelector('.promotion').innerHTML = '';
+                //Message
+                createToast('success', '<i class="ri-check-line"></i>', `Joker képesség sikeresen aktiválva!`);
+                //Deactivate ability
+                jokerActivated = false;
+                //Removing all hints
+                gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
+                //Update all possible steps for current element
+                calcValidSteps();
+            });
+        });
     };
 
-    function onMouseMove(event) {
-        //Only do calculation if there is a selected element
-        if (selectedPiece) {
-            //min & max is to keep the transformed element within border
-            //480 is default width but only the half of the element can go out (design), so 480-30
-            const x = Math.min(450, Math.max(-30, event.clientX - containerRect.left - selectedPiece.getBoundingClientRect().width / 2));
-            //720 is default height but only the half of the element can go out (design), so 720-30
-            const y = Math.min(690, Math.max(-30, event.clientY - containerRect.top - selectedPiece.getBoundingClientRect().height / 2));
-            //Update position of selected element
-            selectedPiece.style.transform = `translate(${x}px,${y}px)`;
-            //Current cursor position
-            const pos = getPos(event, containerRect, selectedPiece);
-            //Update hover position according to cursor position
-            gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
-        }
-    };
-
-    function onMouseUp(event) {
-        //Only do calculation if there is a selected element
-        if (!selectedPiece) return;
-        //Dragged element position
-        const pos = getPos(event, containerRect, selectedPiece);
+    // ========== PIECE PLACEMENT HANDLER ==========
+    function placePiece(pos) {
         //The current position is valid if there is a hint
         const valid = gameBoard.querySelector(`.hint[style*="transform: translate(${pos.x}%, ${pos.y}%)"]`);
         //If its not null (there is a hint element)
@@ -282,17 +234,14 @@ function initGame() {
             //Moves the selected element / highlight / hover to the clicked position
             selectedPiece.style.transform = `translate(${pos.x}%,${pos.y}%)`;
             // Check if the element has the data-original attribute
-            if (selectedPiece.hasAttribute('data-original')) {
+            if (selectedPiece.hasAttribute('data-original-piece')) {
                 //If so there was a valid step with it so change it back to its original attribute
-                selectedPiece.setAttribute('data-piece', selectedPiece.getAttribute('data-original'));
-                //If the element is a pawn need to set back its original direction
-                if (selectedPiece.hasAttribute('data-original-direction')) {
-                    selectedPiece.setAttribute('data-direction', selectedPiece.getAttribute('data-original-direction'));
-                    selectedPiece.removeAttribute('data-original-direction');
-                }
-                //Remove the unnecessary attribute
-                selectedPiece.removeAttribute('data-original');
-                createToast('info', '<i class="ri-information-line"></i>', `Joker képesség használata végetért!`);
+                selectedPiece.setAttribute('data-piece', selectedPiece.getAttribute('data-original-piece'));
+                selectedPiece.setAttribute('data-direction', selectedPiece.getAttribute('data-original-direction'));
+                //Remove the unnecessary attributes
+                selectedPiece.removeAttribute('data-original-piece');
+                selectedPiece.removeAttribute('data-original-direction');
+                createToast('info', '<i class="ri-information-line"></i>', 'Joker képesség használata végetért!');
             }
             gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
             gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
@@ -301,16 +250,11 @@ function initGame() {
                 if (selectedPiece.getAttribute('data-direction') === 'up' && pos.y === 0) selectedPiece.setAttribute('data-direction', 'down');
                 else if (selectedPiece.getAttribute('data-direction') === 'down' && pos.y === boardHeight) selectedPiece.setAttribute('data-direction', 'up');
             }
-            //Display settings
-            selectedPiece.style.zIndex = '';
-            selectedPiece.style.cursor = 'grab';
-            //Reset the selected element
-            selectedPiece = null;
+            //The move was successful, so remove all the hints
+            gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
             //Change player on go (if there is no active spell)
             if (!freezeActivated) playerGo = (playerGo === 'w') ? 'b' : 'w';
             freezeActivated = false;
-            //The move was successful, so remove all the hints
-            gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
         } else {
             //If the selected position is not the original position
             if (pos.x !== selectedPiecePos.x || pos.y !== selectedPiecePos.y) {
@@ -321,82 +265,127 @@ function initGame() {
             selectedPiece.style.transform = `translate(${selectedPiecePos.x}%,${selectedPiecePos.y}%)`;
             gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${selectedPiecePos.x}%, ${selectedPiecePos.y}%); opacity: 0.5;`;
             gameBoard.querySelector('.hover').style.cssText = `transform: translate(${selectedPiecePos.x}%, ${selectedPiecePos.y}%); opacity: 0.7;`;
-            //Display settings
-            selectedPiece.style.zIndex = '';
-            selectedPiece.style.cursor = 'grab';
-            //For click movement
-            hintActive = selectedPiece;
-            //Reset the selected element
-            selectedPiece = null;
+        }
+        //Display settings
+        selectedPiece.style.zIndex = '';
+        selectedPiece.style.cursor = 'grab';
+        //Reset the selected element
+        dragged = false;
+    };
+
+    // ========== ABILITY HANDLER ==========
+    function abilityHandler() {
+        //Selectors for further usage
+        const player = this.closest('.player-component').getAttribute('data-player');
+        const color = this.closest('.player-component').getAttribute('data-player-color');
+        const ability = this.querySelector('.spell-image').getAttribute('data-name');
+        //Check if the clicked spell was the player on go
+        if (playerGo === color) {
+            //Check for the chosen ability
+            if (ability === 'Joker') {
+                //If there is no selected element, throw an error
+                if (!selectedPiece) {
+                    createToast('error', '<i class="ri-indeterminate-circle-line"></i>', 'Jelöljön ki egy elemet!<br>(Erre lesz a lépés átmásolva.)');
+                    return; //Stop executing the function
+                }
+                //Display all the possible pieces
+                getOtherPieces(selectedPiece,
+                    selectedPiece.getAttribute('data-piece'),
+                    selectedPiece.hasAttribute('data-direction') ? selectedPiece.getAttribute('data-direction') : null
+                );
+                //Activate ability
+                jokerActivated = true;
+            } else {
+                freezeActivated = true; //Freeze ability is activated for the player
+                createToast('success', '<i class="ri-check-line"></i>', `${player} játékos sikeresen aktiválta a fagyasztás képességet!`);
+                createToast('info', '<i class="ri-information-line"></i>', `${player} játékos kettőt tud lépni!`);
+            }
+            //Make the selected spell inactive
+            this.querySelector('.spell').classList.add('inactive');
+            //Remove listener not to use ability again (in the current round)
+            this.removeEventListener('click', abilityHandler);
         }
     };
 
-    // ========== MOVING PIECES WITH CLICK ==========
-    function movePieceClick(event) {
-        //Current position of the clicked hint element
-        const pos = getPos(event, containerRect, event.target);
-        //The current position is valid if there is a hint
-        const valid = gameBoard.querySelector(`.hint[style*="transform: translate(${pos.x}%, ${pos.y}%)"]`); //Need for possibility of capture
-        //Capture check
-        if (valid.getAttribute('data-hint') !== null) {
-            capture.play(); //Capture sound
-            //Selectors for further usage
-            const capturedPiece = gameBoard.querySelector(`.piece[style*="transform: translate(${pos.x}%, ${pos.y}%)"]`);
-            const foundPiece = pieces.find(piece => piece.name === capturedPiece.getAttribute('data-piece'));
-            //The player on turn gets the points and the captured piece
-            const currentPlayerIndex = (playerGo === 'w') ? 1 : 0;
-            playersPoint[currentPlayerIndex].textContent = parseInt(playersPoint[currentPlayerIndex].textContent) + foundPiece.points;
-            playerCaptured[currentPlayerIndex].append(createElementWithAttributes('span', { 'data-piece': foundPiece.name }));
-            //Removing the element
-            capturedPiece.remove();
-        } else click.play(); //Basic move -> click sound
-
-        //Moves the selected element / highlight / hover to the clicked position
-        hintActive.style.transform = `translate(${pos.x}%, ${pos.y}%)`;
-        // Check if the element has the data-original attribute
-        if (hintActive.hasAttribute('data-original')) {
-            //If so there was a valid step with it so change it back to its original attribute
-            hintActive.setAttribute('data-piece', hintActive.getAttribute('data-original'));
-            //If the element is a pawn need to set back its original direction
-            if (hintActive.hasAttribute('data-original-direction')) {
-                hintActive.setAttribute('data-direction', hintActive.getAttribute('data-original-direction'));
-                hintActive.removeAttribute('data-original-direction');
+    // ========== MOVING PIECES WITH DRAG & DROP ==========
+    function onMouseDown(event) {
+        //Prevent default drag&drop
+        event.preventDefault();
+        const clickedElement = event.target;
+        //Check if clicked element is a piece and its color equals to player on go
+        if (clickedElement.classList.contains('piece') && clickedElement.getAttribute('data-piece').charAt(0) === playerGo) {
+            //Start drag
+            selectedPiece = clickedElement;
+            dragged = true;
+            //Dragged element position
+            const pos = getPos(selectedPiece);
+            //Saving current position, because of the move was incorrect the piece will be placed back to its origin position
+            selectedPiecePos = pos;
+            //Moving the highlight / hover to the current position
+            gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
+            gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
+            //Display settings
+            selectedPiece.style.zIndex = 100;
+            selectedPiece.style.cursor = 'grabbing';
+            //Removing all hints
+            gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
+            //Check for joker spell
+            if (jokerActivated) {
+                getOtherPieces(selectedPiece,
+                    selectedPiece.getAttribute('data-piece'),
+                    selectedPiece.hasAttribute('data-direction') ? selectedPiece.getAttribute('data-direction') : null
+                );
             }
-            //Remove the unnecessary attribute
-            hintActive.removeAttribute('data-original');
-            createToast('info', '<i class="ri-information-line"></i>', `Joker képesség használata végetért!`);
+            //Calculating all possible steps for current element
+            calcValidSteps();
+        } else {
+            //If the click was out of border / not on piece / different colored piece, hide the highlight / hover
+            gameBoard.querySelector('.highlight').style.cssText = `opacity: 0;`;
+            gameBoard.querySelector('.hover').style.cssText = `opacity: 0;`;
+            //Reset current selected element
+            dragged = false;
         }
-        gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
-        gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
-        //If the piece is a pawn and it has reached the enemy's baseline change direction vice-versa
-        if (hintActive.getAttribute('data-piece').charAt(1) === 'p') {
-            if (hintActive.getAttribute('data-direction') === 'up' && pos.y === 0) hintActive.setAttribute('data-direction', 'down');
-            else if (hintActive.getAttribute('data-direction') === 'down' && pos.y === boardHeight) hintActive.setAttribute('data-direction', 'up');
-        }
-        //The move was successful, so remove all the hints
-        gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
-        //Change player on go (if there is no active spell)
-        if (!freezeActivated) playerGo = (playerGo === 'w') ? 'b' : 'w';
-        freezeActivated = false;
-        //Reset the selected element
-        hintActive = null;
-    }
+    };
 
-    // ========== INITIALIZE EVENT LISTENERS ==========
-    function setupEventListeners() {
+    function onMouseMove(event) {
+        //Only do calculation if there is a selected element
+        if (dragged) {
+            //min & max is to keep the transformed element within border
+            //480 is default width but only the half of the element can go out (design), so 480-30
+            const x = Math.min(450, Math.max(-30, event.clientX - containerRect.left - selectedPiece.getBoundingClientRect().width / 2));
+            //720 is default height but only the half of the element can go out (design), so 720-30
+            const y = Math.min(690, Math.max(-30, event.clientY - containerRect.top - selectedPiece.getBoundingClientRect().height / 2));
+            //Update position of selected element
+            selectedPiece.style.transform = `translate(${x}px,${y}px)`;
+            //Current cursor position
+            const pos = calcPos(event, containerRect, selectedPiece);
+            //Update hover position according to cursor position
+            gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
+        }
+    };
+
+    function onMouseUp(event) {
+        //Only do calculation if there is a dragged element
+        if (!dragged) return;
+        placePiece(calcPos(event, containerRect, selectedPiece));
+    };
+
+    // ========== INITIALIZE EVENT LISTENERS (self-calling) ==========
+    (function() {
         gameBoard.addEventListener('mousedown', onMouseDown);
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
         playerAbility.forEach((element) => element.addEventListener('click', abilityHandler));
+        document.querySelectorAll('.reset-game').forEach((button) => button.addEventListener('click', resetGame));
         window.addEventListener("resize", updateClientRect); //Need to update the gameBoard bounding rect on resize to avoid incorrect calculations
-    }
+    })();
 
     // ========== CREATE BOARD PIECES ==========
     pieces.forEach((piece) => {
         //Position arrays length means the number of elements
         for (let i = 0; i < piece.position.length; i++){
             //Setting default parameters
-            const figure = createElementWithAttributes('div', { class: 'piece', 'data-piece': piece.name, style: calcPos(piece.position[i]) });
+            const figure = createElementWithAttributes('div', { class: 'piece', 'data-piece': piece.name, style: initPos(piece.position[i]) });
             //White pawn moving upwards
             if (piece.name === 'wp') figure.setAttribute('data-direction', 'up');
             //Black pawn moving downwards
@@ -405,7 +394,37 @@ function initGame() {
             document.querySelector('.game-board').append(figure);
         }
     });
-    setupEventListeners();
+
+    // ========== RESET GAME ==========
+    function resetGame() {
+        //Remove outcome panel display
+        document.querySelector('.outcome').classList.remove('active');
+        //Restore event listeners (to avoid duplicates)
+        gameBoard.removeEventListener('mousedown', onMouseDown);
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        playerAbility.forEach((element) => element.removeEventListener('click', abilityHandler));
+        document.querySelectorAll('.reset-game').forEach((button) => button.removeEventListener('click', resetGame));
+        window.removeEventListener("resize", updateClientRect);
+        //Reset every element
+        document.querySelectorAll('.piece').forEach((piece) => piece.remove());
+        document.querySelectorAll('.hint').forEach((hint) => hint.remove());
+        document.querySelectorAll('.spell').forEach((spell) => spell.classList.remove('inactive'));
+        document.querySelector('.promotion').innerHTML = '';
+        //Reset highlight
+        gameBoard.querySelector('.highlight').style.cssText = `opacity: 0;`;
+        gameBoard.querySelector('.hover').style.cssText = `opacity: 0;`;
+        //Reset points
+        players[0].innerHTML = `${playerBlack} <span>0</span>`;
+        players[1].innerHTML = `${playerWhite} <span>0</span>`;
+        //Reset captured pieces
+        playerCaptured[0].innerHTML = '';
+        playerCaptured[1].innerHTML = '';
+        //Reset current round
+        document.querySelector('.curr-round-number').textContent = 0;
+        //Initialize game
+        initGame();
+    }
 
     // ========== OUTCOME ==========
     function outCome() {
@@ -439,44 +458,12 @@ function initGame() {
         //Change values
         images.forEach((image, index) => image.src = avatars[index].src);
         document.querySelectorAll('.modal-box-player p span').forEach((points, index) => points.textContent = players[index].querySelector('span').textContent);
-    }
-
-    // ========== RESET GAME ==========
-    document.querySelectorAll('.reset-game').forEach((button) => {
-        button.addEventListener('click', () => {
-            //Remove outcome panel display
-            document.querySelector('.outcome').classList.remove('active');
-            //Restore event listeners (to avoid duplicates)
-            gameBoard.removeEventListener('mousedown', onMouseDown);
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            playerAbility.forEach((element) => element.removeEventListener('click', abilityHandler));
-            window.removeEventListener("resize", updateClientRect);
-            //Removing all the remaining pieces
-            document.querySelectorAll('.piece').forEach((piece) => piece.remove());
-            document.querySelectorAll('.hint').forEach((hint) => hint.remove());
-            //Reset spells
-            document.querySelectorAll('.spell').forEach((spell) => spell.classList.remove('inactive'));
-            //Reset points
-            players[0].innerHTML = `${playerBlack} <span>0</span>`;
-            players[1].innerHTML = `${playerWhite} <span>0</span>`;
-            //Reset captured pieces
-            playerCaptured[0].innerHTML = '';
-            playerCaptured[1].innerHTML = '';
-            //Reset current round
-            document.querySelector('.curr-round-number').textContent = 0;
-            //Initialize game
-            initGame();
-        });
-    });
+    };
 }
 
-
-//JOKER ABILTIY
-//Popup modal -> has every piece of the same color except the selected
-//Only for 1 move which is done, but if its captured the default points should be counted
-
+//!!!
 //round counter -> finish game -> popup dashboard for winner (or draw)
 //check for further possible steps -> if none -> end game
 // iv)Az a játékos nyer, aki először szedi le az ellenfele minden bábuját.
 // Ha ennyi kör alatt senki sem nyer, a játszma akkor is érjen véget, és az oldal hirdessen győztest a leütött figurák pontjai alapján
+///!!!
