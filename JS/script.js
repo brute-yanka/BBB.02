@@ -113,8 +113,6 @@ function createToast(type, icon, text) {
     setTimeout(() => toast.remove(), 5000);
 };
 
-initGame();
-roundsValue = 2;
 //========== INITIALIZE ==========
 function initGame() {
     createToast('info', '<i class="ri-information-line"></i>', 'A játékot a Fehér játékos tudja kezdeni!');
