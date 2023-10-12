@@ -106,6 +106,8 @@ function createToast(type, icon, text) {
     setTimeout(() => toast.remove(), 5000);
 };
 
+initGame();
+roundsValue = 2;
 //========== INITIALIZE ==========
 function initGame() {
     createToast('info', '<i class="ri-information-line"></i>', 'A játékot a Fehér játékos tudja kezdeni!');
@@ -125,6 +127,16 @@ function initGame() {
     const boardHeight = 1100;
     //For displaying points and captured pieces
     const playersPoint = document.querySelectorAll('.player-name span');
+
+    //========== CHECK DEVICE TYPE (Touch / non-touch device) ==========
+    const deviceType = (function() {
+        try {
+            document.createEvent("TouchEvent");
+            return true;
+        } catch (e) {
+            return false;
+        }
+    })();
 
     //========== CALCULATE ALL THE VALID STEPS ==========
     function calcValidSteps() {
@@ -308,9 +320,11 @@ function initGame() {
                     );
                     //Activate ability
                     jokerActivated = true;
+                    notify.play(); //Play notification sound
                 }
             } else {
                 freezeActivated = true; //Freeze ability is activated for the player
+                notify.play(); //Play notification sound
                 createToast('success', '<i class="ri-check-line"></i>', `${player} játékos sikeresen aktiválta a fagyasztás képességet!`);
                 createToast('info', '<i class="ri-information-line"></i>', `${player} játékos kettőt tud lépni!`);
             }
@@ -321,7 +335,7 @@ function initGame() {
         }
     };
 
-    //========== MOVING PIECES WITH DRAG & DROP ==========
+    //========== NON-TOUCH DEVICE DRAG & DROP ==========
     function onMouseDown(event) {
         //Prevent default drag&drop
         event.preventDefault();
@@ -358,6 +372,8 @@ function initGame() {
             gameBoard.querySelector('.hover').style.cssText = `opacity: 0;`;
             //Reset current selected element
             dragged = false;
+            //If there was a click but not on the hint element, remove all the hint
+            if(!clickedElement.classList.contains('hint')) gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
         }
     };
 
@@ -383,11 +399,62 @@ function initGame() {
         placePiece(calcPos(event, containerRect, selectedPiece));
     };
 
+    //========== TOUCH DEVICE DRAG & DROP ==========
+    function onTouchStart(event) {
+        const clickedElement = event.targetTouches[0].target; // Get the first touch
+        if (clickedElement.classList.contains('piece') && clickedElement.getAttribute('data-piece').charAt(0) === playerGo) {
+            selectedPiece = clickedElement;
+            dragged = true;
+            const pos = getPos(selectedPiece);
+            selectedPiecePos = pos;
+            gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
+            gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
+            selectedPiece.style.zIndex = 100;
+            selectedPiece.style.cursor = 'grabbing';
+            gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
+            if (jokerActivated) {
+            getOtherPieces(selectedPiece, selectedPiece.getAttribute('data-piece'), selectedPiece.hasAttribute('data-direction') ? selectedPiece.getAttribute('data-direction') : null);
+            }
+            calcValidSteps();
+        } else {
+            gameBoard.querySelector('.highlight').style.cssText = `opacity: 0;`;
+            gameBoard.querySelector('.hover').style.cssText = `opacity: 0;`;
+            dragged = false;
+            if (!clickedElement.classList.contains('hint')) gameBoard.querySelectorAll('.hint').forEach((hint) => hint.remove());
+        }
+    };
+
+    function onTouchMove(event) {
+        if (!dragged) return;
+        const touch = event.targetTouches[0]; // Get the first touch
+
+        const x = Math.min(450, Math.max(-30, touch.clientX - containerRect.left - selectedPiece.getBoundingClientRect().width / 2));
+        const y = Math.min(690, Math.max(-30, touch.clientY - containerRect.top - selectedPiece.getBoundingClientRect().height / 2));
+
+        selectedPiece.style.transform = `translate(${x}px, ${y}px)`;
+
+        const pos = calcPos(touch, containerRect, selectedPiece);
+        gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
+    };
+
+    function onTouchEnd(event) {
+        if (!dragged) return;
+        const touch = event.changedTouches[0];
+        placePiece(calcPos(touch, containerRect, selectedPiece));
+    };
+
     //========== INITIALIZE EVENT LISTENERS (self-calling) ==========
-    (function() {
-        gameBoard.addEventListener('mousedown', onMouseDown);
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+    (function () {
+        //If the device is a touch device add different listeners
+        if (deviceType) {
+            document.addEventListener('touchstart', onTouchStart);
+            document.addEventListener('touchmove', onTouchMove);
+            document.addEventListener('touchend', onTouchEnd);
+        } else {
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
         playerAbility.forEach((element) => element.addEventListener('click', abilityHandler));
         document.querySelectorAll('.reset-game').forEach((button) => button.addEventListener('click', resetGame));
         window.addEventListener("resize", updateClientRect); //Need to update the gameBoard bounding rect on resize to avoid incorrect calculations
@@ -409,13 +476,19 @@ function initGame() {
     });
 
     //========== RESET GAME ==========
-    function resetGame() {
+    function resetGame(init = true) {
         //Remove endgame panel display
         document.querySelector('.endgame').classList.remove('active');
         //Restore event listeners (to avoid duplicates)
-        gameBoard.removeEventListener('mousedown', onMouseDown);
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
+        if (deviceType) {
+            document.removeEventListener('touchstart', onTouchStart);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+        } else {
+            document.removeEventListener('mousedown', onMouseDown);
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
         playerAbility.forEach((element) => element.removeEventListener('click', abilityHandler));
         document.querySelectorAll('.reset-game').forEach((button) => button.removeEventListener('click', resetGame));
         window.removeEventListener("resize", updateClientRect);
@@ -436,8 +509,8 @@ function initGame() {
         //Reset current round
         document.querySelector('.curr-round-number').textContent = 0;
         //Initialize game
-        initGame();
-    }
+        if(init) initGame();
+    };
 
     //========== ENDGAME ==========
     function endGame() {
@@ -453,6 +526,7 @@ function initGame() {
         container.classList.add('active');
         //Check if user want to go to home page
         homeButton.addEventListener('click', () => {
+            resetGame(false);
             //Reset inputs
             document.querySelectorAll('.home-input').forEach((input) => input.value = '');
             //Change active section
@@ -463,15 +537,17 @@ function initGame() {
         if (player1Points > player2Points) {
             document.querySelector('.modal-box > h3').innerHTML = `<span>${playerBlack}</span> a győztes!`;
             images[0].setAttribute('data-winner', '');
+            gameEnd.play(); //Play game-end sound (there is a winner)
         } else if (player1Points < player2Points) {
             document.querySelector('.modal-box > h3').innerHTML = `<span>${playerWhite}</span> a győztes!`;
             images[1].setAttribute('data-winner', '');
-
+            gameEnd.play(); //Play game-end sound (there is a winner)
         } else {
             document.querySelector('.modal-box > h3').innerHTML = `Döntetlen!`;
             //If there was previous round and there was a winner -> remove for current round
             images[0].removeAttribute('data-winner');
             images[1].removeAttribute('data-winner');
+            gameDraw.play(); //Play game-end sound (draw)
         }
         //Change values
         images.forEach((image, index) => image.src = avatars[index].src);
