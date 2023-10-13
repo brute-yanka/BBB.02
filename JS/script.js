@@ -260,18 +260,6 @@ function initGame() {
                 playersPoint[currentPlayerIndex].textContent = parseInt(playersPoint[currentPlayerIndex].textContent) + foundPiece.points;
                 //Check end-game (by captured pieces)
                 if (parseInt(playersPoint[currentPlayerIndex].textContent) === 29) endGame();
-                //Check for further step possibility (if joker ability was used and there are no other pieces just pawns)
-                if (document.querySelector(`.player-component[data-player-color=${playerGo === 'w' ? 'b' : 'w'}] .spell-image[data-name="Joker"]`).parentNode.classList.contains('inactive') &&
-                    document.querySelectorAll(`.piece[data-piece^='${playerGo === 'w' ? 'b' : 'w'}']:not([data-piece$='p'])`).length === 0) {
-                    //Since only pawns cant attack in the way of its movement
-                    document.querySelectorAll(`.piece[data-piece^='${playerGo === 'w' ? 'b' : 'w'}p']`).forEach(pawn => {
-                        //If there is only one pawn that can move its not game-end
-                        if (calcValidSteps(pawn).length > 0)
-                            return; //No need to check further steps
-                    });
-                    //Its end-game if the joker ability is not available and the pawn(s) cant move
-                    endGame();
-                }
                 //Add captured element
                 playerCaptured[currentPlayerIndex].append(createElementWithAttributes('span', { 'data-piece': foundPiece.name }));
                 //Remove the element
@@ -288,6 +276,18 @@ function initGame() {
                 selectedPiece.removeAttribute('data-original-piece');
                 selectedPiece.removeAttribute('data-original-direction');
                 createToast('info', '<i class="ri-information-line"></i>', 'Joker képesség használata végetért!');
+            }
+            //Check for further step possibility (if joker ability was used and there are no other pieces just pawns)
+            if (document.querySelector(`.player-component[data-player-color=${playerGo === 'w' ? 'b' : 'w'}] .spell-image[data-name="Joker"]`).parentNode.classList.contains('inactive') &&
+                document.querySelectorAll(`.piece[data-piece^='${playerGo === 'w' ? 'b' : 'w'}']:not([data-piece$='p'])`).length === 0) {
+                //Since only pawns cant attack in the way of its movement
+                document.querySelectorAll(`.piece[data-piece^='${playerGo === 'w' ? 'b' : 'w'}p']`).forEach(pawn => {
+                    //If there is only one pawn that can move its not game-end
+                    if (calcValidSteps(pawn).length > 0)
+                        return; //No need to check further steps
+                });
+                //Its end-game if the joker ability is not available and the pawn(s) cant move
+                endGame();
             }
             gameBoard.querySelector('.highlight').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.5;`;
             gameBoard.querySelector('.hover').style.cssText = `transform: translate(${pos.x}%, ${pos.y}%); opacity: 0.7;`;
